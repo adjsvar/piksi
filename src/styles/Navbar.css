@@ -1,0 +1,96 @@
+.top-navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background-color: white;
+    z-index: 30;
+    width: 100%;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    margin-bottom: 2rem;
+  }
+  
+  .search-container {
+    width: 100%;
+    padding: 1rem 0.75rem;
+    display: flex;
+    align-items: center;
+    background-color: white;
+  }
+  
+  .logo-container {
+    display: flex;
+    align-items: center;
+    margin-left: 1.5rem;
+    margin-right: 1.5rem;
+    cursor: pointer;
+    text-decoration: none;
+  }
+  
+  .logo-text {
+    font-size: 2rem;
+    font-weight: 800;
+    background: linear-gradient(to right, #4ac6b7, #9370db);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    letter-spacing: -0.5px;
+  }
+  
+  .search-wrapper {
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    max-width: 36rem;
+    position: relative;
+  }
+  
+  .search-icon {
+    position: absolute;
+    left: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: white;
+    z-index: 10;
+  }
+  
+  .search-input {
+    width: 100%;
+    padding: 0.85rem 1rem 0.85rem 2.5rem;
+    border-radius: 6px;
+    background: linear-gradient(to right, rgba(74, 198, 183, 0.9), rgba(147, 112, 219, 0.9));
+    border: none;
+    outline: none;
+    font-size: 1rem;
+    color: white;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .search-input::placeholder {
+    color: rgba(255, 255, 255, 0.8);
+  }
+  
+  .search-input:focus {
+    background: linear-gradient(to right, rgba(74, 198, 183, 1), rgba(147, 112, 219, 1));
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+  
+  @media (max-width: 768px) {
+    .search-container {
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+    }
+    
+    .logo-container {
+      margin-bottom: 0;
+      margin-right: 1rem;
+    }
+    
+    .search-wrapper {
+      flex-grow: 1;
+    }
+  }
