@@ -28,6 +28,7 @@
   border-radius: 3px;
   aspect-ratio: 9/16;
   overflow: hidden;
+  border: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 .product-color-bg {
@@ -51,6 +52,17 @@
 
 .product-card:hover .product-thumbnail {
   filter: brightness(1.15) contrast(0.92) saturate(1.08);
+}
+
+.video-container {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  overflow: hidden;
+  border-radius: 3px;
+  width: 100%;
+  height: 100%;
+  border: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 .product-card:after {
@@ -123,39 +135,6 @@
   color: white;
 }
 
-.share-button-container {
-  position: absolute;
-  top: 0.75rem;
-  left: 0.75rem;
-  z-index: 10;
-  opacity: 0;
-  transition: opacity 0.2s ease;
-}
-
-.product-card:hover .share-button-container {
-  opacity: 1;
-}
-
-.share-button {
-  width: 2.5rem;
-  height: 2.5rem;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-  background-color: white;
-  color: #4b5563;
-  border: none;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.share-button:hover {
-  transform: scale(1.1);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
-}
-
 .product-title-overlay {
   position: absolute;
   bottom: 0;
@@ -184,7 +163,7 @@
 }
 
 @media (max-width: 640px) {
-  .pik-button, .share-button {
+  .pik-button {
     width: 2rem;
     height: 2rem;
   }

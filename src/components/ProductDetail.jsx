@@ -14,11 +14,15 @@ const ProductDetail = ({ showNotification }) => {
   const [relatedProducts, setRelatedProducts] = useState([])
   const [loadingMoreProducts, setLoadingMoreProducts] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
-  const [hasMoreProducts, setHasMoreProducts] = useState(true)
+  const [cycleCount, setCycleCount] = useState(0)
+  const [videoLoaded, setVideoLoaded] = useState(false)
   
-  // Refs para limpiar recursos
-  const youtubeContainerRef = useRef(null)
+  // Ref para el contenedor del iframe
+  const iframeContainerRef = useRef(null)
   const scrollListenerRef = useRef(null)
+  
+  // Usamos el mismo ID de video para todos los productos
+  const videoId = "6vavVtGDCvA"
   
   // Efecto para limpiar recursos al desmontar el componente
   useEffect(() => {
@@ -28,9 +32,9 @@ const ProductDetail = ({ showNotification }) => {
         window.removeEventListener('scroll', scrollListenerRef.current)
       }
       
-      // Limpiar el iframe de YouTube
-      if (youtubeContainerRef.current) {
-        youtubeContainerRef.current.innerHTML = ''
+      // Limpiar iframe
+      if (iframeContainerRef.current) {
+        iframeContainerRef.current.innerHTML = ''
       }
     }
   }, [])
@@ -40,40 +44,42 @@ const ProductDetail = ({ showNotification }) => {
     // Resetear estado
     setRelatedProducts([])
     setCurrentPage(1)
-    setHasMoreProducts(true)
     setLoadingMoreProducts(false)
+    setCycleCount(0)
+    setVideoLoaded(false)
     
-    // Limpiar iframe de YouTube
-    if (youtubeContainerRef.current) {
-      youtubeContainerRef.current.innerHTML = ''
+    // Limpiar iframe
+    if (iframeContainerRef.current) {
+      iframeContainerRef.current.innerHTML = ''
     }
     
     const foundProduct = products.find(p => p.id === parseInt(productId))
     if (foundProduct) {
       setProduct(foundProduct)
       
-      // Limitar a 8 productos similares iniciales para mejorar rendimiento
-      const related = getRelatedProducts(foundProduct.id, 8)
+      // Cargamos los productos iniciales
+      const related = getRelatedProducts(foundProduct.id, 12)
       setRelatedProducts(related)
       
-      // Iniciar video con un pequeño retraso
+      // Cargar el iframe con un pequeño retraso
       setTimeout(() => {
-        initVideo(foundProduct.videoId || '-_70_SIGNCs')
+        loadVideoIframe()
       }, 100)
     }
   }, [productId, products, getRelatedProducts])
 
   // Handler de scroll optimizado con useCallback
   const handleScroll = useCallback(() => {
-    if (!hasMoreProducts || loadingMoreProducts) return
+    if (loadingMoreProducts) return
     
     const scrollPosition = window.innerHeight + window.scrollY
     const bodyHeight = document.body.offsetHeight
     
-    if (scrollPosition >= bodyHeight - 500) {
+    // Aumentamos la distancia de trigger para cargar más temprano
+    if (scrollPosition >= bodyHeight - 1000) {
       loadMoreSimilarProducts()
     }
-  }, [loadingMoreProducts, hasMoreProducts])
+  }, [loadingMoreProducts])
 
   // Configurar el listener de scroll
   useEffect(() => {
@@ -86,34 +92,57 @@ const ProductDetail = ({ showNotification }) => {
     }
   }, [handleScroll])
 
-  // Función para cargar más productos
+  // Función para cargar más productos con ciclo continuo y límite de productos
   const loadMoreSimilarProducts = useCallback(() => {
-    if (loadingMoreProducts || !hasMoreProducts) return
+    if (loadingMoreProducts) return
     
     setLoadingMoreProducts(true)
     
     setTimeout(() => {
-      const nextPage = currentPage + 1
-      
-      // Cargamos menos productos para mejorar el rendimiento
-      const moreProducts = getRelatedProducts(parseInt(productId), 6)
-      
-      // Aseguramos IDs únicos para evitar problemas de renderizado
-      const uniqueMoreProducts = moreProducts.map((p, idx) => ({
-        ...p,
-        uniqueId: `${p.id}-page${nextPage}-${idx}`
-      }))
-      
-      setRelatedProducts(prev => [...prev, ...uniqueMoreProducts])
-      setCurrentPage(nextPage)
-      setLoadingMoreProducts(false)
-      
-      // Limitamos a máximo 3 páginas para evitar sobrecarga
-      if (nextPage >= 3) {
-        setHasMoreProducts(false)
+      try {
+        const nextPage = currentPage + 1
+        
+        // Verificamos que productId sea válido
+        const parsedProductId = parseInt(productId)
+        if (isNaN(parsedProductId)) {
+          console.error("ID de producto inválido:", productId)
+          setLoadingMoreProducts(false)
+          return
+        }
+        
+        // Cargamos más productos
+        const moreProducts = getRelatedProducts(parsedProductId, 8)
+        
+        // Verificamos si llegamos al límite de páginas
+        const isNewCycle = nextPage > 3
+        const newCycleCount = isNewCycle ? cycleCount + 1 : cycleCount
+        const adjustedPage = isNewCycle ? 1 : nextPage
+        
+        // Aseguramos IDs únicos para cada producto
+        const uniqueMoreProducts = moreProducts.map((p, idx) => ({
+          ...p,
+          uniqueId: `${p.id}-cycle${newCycleCount}-page${adjustedPage}-${idx}`
+        }))
+        
+        // Limitamos el número total de productos mostrados
+        setRelatedProducts(prev => {
+          // Si superamos el límite, eliminamos los más antiguos
+          const maxProducts = 36;
+          const newProducts = [...prev, ...uniqueMoreProducts];
+          return newProducts.length > maxProducts ? 
+            newProducts.slice(newProducts.length - maxProducts) : 
+            newProducts;
+        })
+        
+        setCurrentPage(adjustedPage)
+        setCycleCount(newCycleCount)
+      } catch (error) {
+        console.error("Error al cargar más productos:", error)
+      } finally {
+        setLoadingMoreProducts(false)
       }
-    }, 300) // Reducimos el tiempo de espera
-  }, [currentPage, getRelatedProducts, hasMoreProducts, loadingMoreProducts, productId])
+    }, 150)
+  }, [currentPage, cycleCount, getRelatedProducts, loadingMoreProducts, productId])
 
   const handleTogglePik = () => {
     if (!product) return
@@ -124,19 +153,24 @@ const ProductDetail = ({ showNotification }) => {
       showNotification(product, "Piksis")
     }
   }
+  
+  const handleShareClick = () => {
+    if (!product) return
+    
+    // En una implementación real, esto abriría un modal de compartir
+    alert(`Compartir: ${product.title} - En una implementación real, esto abriría opciones para compartir en redes sociales, WhatsApp, etc.`)
+  }
 
-  // Inicializar video de manera más eficiente
-  const initVideo = (videoId) => {
-    if (!youtubeContainerRef.current) return
+  // Cargar iframe de YouTube sin controles y sin lista de reproducción
+  const loadVideoIframe = () => {
+    if (!iframeContainerRef.current) return
     
     try {
-      // Versión simplificada para mejorar rendimiento
-      youtubeContainerRef.current.innerHTML = `
+      iframeContainerRef.current.innerHTML = `
         <iframe 
           width="100%" 
           height="100%" 
-          src="https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&loop=1&controls=0&rel=0&modestbranding=1&playlist=${videoId}&iv_load_policy=3&playsinline=1" 
-          title="YouTube video" 
+          src="https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&controls=0&showinfo=0&rel=0&loop=1&modestbranding=1&fs=0&disablekb=1&iv_load_policy=3&color=white" 
           frameborder="0" 
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
           allowfullscreen
@@ -145,13 +179,9 @@ const ProductDetail = ({ showNotification }) => {
       `
       
       // Ocultar placeholder y botón de play
-      const placeholder = document.querySelector('.detail-video-placeholder')
-      const playIcon = document.querySelector('.detail-video-play-icon')
-      
-      if (placeholder) placeholder.style.display = 'none'
-      if (playIcon) playIcon.style.display = 'none'
+      setVideoLoaded(true)
     } catch (error) {
-      console.error("Error al iniciar el video:", error)
+      console.error("Error al cargar el iframe:", error)
     }
   }
 
@@ -168,58 +198,111 @@ const ProductDetail = ({ showNotification }) => {
           {/* Columna izquierda: Video */}
           <div className="product-detail-header">
             <div className="product-detail-video-container">
-              <div id="detailYoutubePlayerContainer" ref={youtubeContainerRef}></div>
-              <div 
-                className="detail-video-play-icon" 
-                onClick={() => initVideo(product.videoId || '-_70_SIGNCs')}
-              >
-                <svg 
-                  xmlns="http://www.w3.org/2000/svg" 
-                  width="30" 
-                  height="30" 
-                  viewBox="0 0 24 24" 
-                  fill="white" 
-                  stroke="white" 
-                  strokeWidth="2" 
-                  strokeLinecap="round" 
-                  strokeLinejoin="round"
-                >
-                  <polygon points="5 3 19 12 5 21 5 3"></polygon>
-                </svg>
-              </div>
-              <img 
-                src={`https://img.youtube.com/vi/${product.videoId || '-_70_SIGNCs'}/maxresdefault.jpg`} 
-                className="detail-video-placeholder" 
-                alt={product.title} 
-              />
+              <div id="iframeContainer" className="iframe-container" ref={iframeContainerRef}></div>
+              
+              {!videoLoaded && (
+                <>
+                  <div 
+                    className="detail-video-play-icon" 
+                    onClick={loadVideoIframe}
+                  >
+                    <svg 
+                      xmlns="http://www.w3.org/2000/svg" 
+                      width="30" 
+                      height="30" 
+                      viewBox="0 0 24 24" 
+                      fill="white" 
+                      stroke="white" 
+                      strokeWidth="2" 
+                      strokeLinecap="round" 
+                      strokeLinejoin="round"
+                    >
+                      <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                    </svg>
+                  </div>
+                  <img 
+                    src={`https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`} 
+                    className="detail-video-placeholder" 
+                    alt={product.title} 
+                  />
+                </>
+              )}
             </div>
           </div>
 
           {/* Columna derecha: Info del producto */}
           <div className="product-detail-info slide-in">
-            <div className="product-detail-badge-container">
-              {product.trending && (
-                <div className="small-badge trending">
-                  Trending
+            <div className="product-action-header">
+              <div className="product-detail-badge-container">
+                {product.trending && (
+                  <div className="small-badge trending">
+                    Trending
+                  </div>
+                )}
+                <div 
+                  className="small-badge category" 
+                  style={{ 
+                    backgroundColor: `${categoryColors[product.category]}20`, 
+                    color: categoryColors[product.category] 
+                  }}
+                >
+                  {product.category === 'tecnologia' 
+                    ? 'Tecnología' 
+                    : product.category.charAt(0).toUpperCase() + product.category.slice(1)
+                  }
                 </div>
-              )}
-              <div 
-                className="small-badge category" 
-                style={{ 
-                  backgroundColor: `${categoryColors[product.category]}20`, 
-                  color: categoryColors[product.category] 
-                }}
-              >
-                {product.category === 'tecnologia' 
-                  ? 'Tecnología' 
-                  : product.category.charAt(0).toUpperCase() + product.category.slice(1)
-                }
+                {product.amazonChoice && (
+                  <div className="small-badge amazon">
+                    Amazon's Choice
+                  </div>
+                )}
               </div>
-              {product.amazonChoice && (
-                <div className="small-badge amazon">
-                  Amazon's Choice
-                </div>
-              )}
+              
+              <div className="product-action-buttons-top">
+                <button 
+                  className={`action-button-icon ${product.piked ? 'active' : ''}`} 
+                  onClick={handleTogglePik}
+                  title={product.piked ? "Guardado" : "Guardar"}
+                >
+                  <svg 
+                    xmlns="http://www.w3.org/2000/svg" 
+                    width="18" 
+                    height="18" 
+                    viewBox="0 0 24 24" 
+                    fill={product.piked ? 'currentColor' : 'none'} 
+                    stroke="currentColor" 
+                    strokeWidth={product.piked ? '1' : '2'} 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round"
+                  >
+                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                  </svg>
+                </button>
+                
+                <button 
+                  className="action-button-icon" 
+                  onClick={handleShareClick}
+                  title="Compartir"
+                >
+                  <svg 
+                    xmlns="http://www.w3.org/2000/svg" 
+                    width="18" 
+                    height="18" 
+                    viewBox="0 0 24 24" 
+                    fill="none" 
+                    stroke="currentColor" 
+                    strokeWidth="2" 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round"
+                  >
+                    <circle cx="18" cy="5" r="3"></circle>
+                    <circle cx="6" cy="12" r="3"></circle>
+                    <circle cx="18" cy="19" r="3"></circle>
+                    <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                    <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                  </svg>
+                </button>
+              </div>
             </div>
             
             <h2 className="product-detail-title">{product.title}</h2>
