@@ -1,9 +1,12 @@
 import { useState } from 'react'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { useProducts } from '../context/ProductContext'
 import '../styles/CollectionsTab.css'
 
 const CollectionsTab = () => {
   const { filterByCollection } = useProducts()
+  const navigate = useNavigate()
+  const location = useLocation()
   const [activeCollection, setActiveCollection] = useState('todos')
 
   const collections = [
@@ -20,6 +23,11 @@ const CollectionsTab = () => {
   const handleCollectionChange = (collection) => {
     setActiveCollection(collection)
     filterByCollection(collection)
+    
+    // Si no estamos en la página principal, navegar a ella
+    if (location.pathname !== '/') {
+      navigate('/')
+    }
   }
 
   return (

@@ -1,52 +1,61 @@
+import { memo } from 'react'
 import { Link } from 'react-router-dom'
-import '../styles/SimilarProductCard.css'
+import '../styles/ProductCard.css'
 
-const SimilarProductCard = ({ product, index }) => {
-  const delay = index * 100 // Retraso escalonado para la animación
+// Usando React.memo para evitar re-renderizados innecesarios
+const SimilarProductCard = memo(({ product, index }) => {
+  // Limitar el delay de animación para mejorar rendimiento
+  const delay = Math.min(index * 25, 200) 
+
+  const truncateText = (text, maxLength) => {
+    if (typeof text !== 'string') return ''
+    if (text.length > maxLength) {
+      return text.substring(0, maxLength) + '...'
+    }
+    return text
+  }
+
+  // Early return para evitar errores con datos inválidos
+  if (!product || !product.id) {
+    return null
+  }
 
   return (
-    <Link 
-      to={`/product/${product.id}`} 
-      className="similar-product-card slide-in" 
-      style={{ animationDelay: `${delay}ms` }}
-    >
-      <div className="similar-product-header">
-        {product.videoId ? (
-          <>
-            <img 
-              src={`https://img.youtube.com/vi/${product.videoId}/maxresdefault.jpg`} 
-              style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
-              alt={product.title} 
-            />
-            <svg 
-              xmlns="http://www.w3.org/2000/svg" 
-              width="40" 
-              height="40" 
-              viewBox="0 0 24 24" 
-              fill="white" 
-              stroke="white" 
-              strokeWidth="2" 
-              strokeLinecap="round" 
-              strokeLinejoin="round" 
-              style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', zIndex: 5, opacity: 0.9 }}
-            >
-              <circle cx="12" cy="12" r="10"></circle>
-              <polygon points="10 8 16 12 10 16 10 8" fill="black" stroke="black"></polygon>
-            </svg>
-          </>
-        ) : (
-          <div style={{ width: '100%', height: '100%', backgroundColor: `#${product.color}` }}></div>
-        )}
-      </div>
-      <div className="similar-product-info">
-        <h3 className="similar-product-title">{product.title}</h3>
-        <div className="product-meta">
-          <div className="product-price">€{product.price.toFixed(2)}</div>
-          <div className="price-discount">-{product.discount}</div>
+    <div className="product-card-wrapper">
+      <Link 
+        to={`/product/${product.id}`} 
+        className="product-card" 
+        style={{ 
+          animationDelay: `${delay}ms`,
+          willChange: 'transform' // Optimización para dispositivos móviles
+        }}
+      >
+        <div className="product-image">
+          <div className="product-color-bg" style={{ backgroundColor: '#000' }}>
+            {product.videoId ? (
+              <img 
+                src={`https://img.youtube.com/vi/${product.videoId}/maxresdefault.jpg`} 
+                className="product-thumbnail" 
+                alt={product.title} 
+                loading="lazy" 
+              />
+            ) : (
+              <div style={{ width: '100%', height: '100%', backgroundColor: `#${product.color}` }}></div>
+            )}
+          </div>
+          
+          <div className="product-title-overlay">
+            <h3 className="product-title-text-overlay">
+              {truncateText(product.title, 40)}
+            </h3>
+          </div>
         </div>
-      </div>
-    </Link>
+      </Link>
+    </div>
   )
-}
+})
+
+// Nombre de display para DevTools
+SimilarProductCard.displayName = 'SimilarProductCard'
 
 export default SimilarProductCard
