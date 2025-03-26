@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { useParams } from 'react-router-dom'
+import { useParams, Link, useNavigate } from 'react-router-dom'
 import { useProducts } from '../context/ProductContext'
-import BackButton from './BackButton'
 import SimilarProductCard from './SimilarProductCard'
 import { categoryColors } from '../data/products'
 import '../styles/ProductDetail.css'
@@ -170,7 +169,7 @@ const ProductDetail = ({ showNotification }) => {
         <iframe 
           width="100%" 
           height="100%" 
-          src="https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&controls=0&showinfo=0&rel=0&loop=1&modestbranding=1&fs=0&disablekb=1&iv_load_policy=3&color=white" 
+          src="https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&controls=0&showinfo=0&rel=0&loop=1&playlist=${videoId}&modestbranding=1&fs=0&disablekb=1&iv_load_policy=3&color=white" 
           frameborder="0" 
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
           allowfullscreen
@@ -191,8 +190,22 @@ const ProductDetail = ({ showNotification }) => {
 
   return (
     <div className="product-detail-page">
-      <BackButton />
-      
+      <Link to="/" className="back-to-home">
+        <svg 
+          xmlns="http://www.w3.org/2000/svg" 
+          width="24" 
+          height="24" 
+          viewBox="0 0 24 24" 
+          fill="none" 
+          stroke="currentColor" 
+          strokeWidth="2" 
+          strokeLinecap="round" 
+          strokeLinejoin="round"
+        >
+          <line x1="19" y1="12" x2="5" y2="12"></line>
+          <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+      </Link>
       <div className="product-detail-content">
         <div className="product-detail-main">
           {/* Columna izquierda: Video */}
@@ -345,25 +358,6 @@ const ProductDetail = ({ showNotification }) => {
                 </svg>
                 Ver oferta en Amazon
               </a>
-              <button 
-                className={`pik-button-large ${product.piked ? 'active' : ''}`} 
-                onClick={handleTogglePik}
-              >
-                <svg 
-                  xmlns="http://www.w3.org/2000/svg" 
-                  width="18" 
-                  height="18" 
-                  viewBox="0 0 24 24" 
-                  fill={product.piked ? 'currentColor' : 'none'} 
-                  stroke="currentColor" 
-                  strokeWidth={product.piked ? '1' : '2'} 
-                  strokeLinecap="round" 
-                  strokeLinejoin="round"
-                >
-                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-                </svg>
-                {product.piked ? 'Guardado' : 'Guardar'}
-              </button>
             </div>
             
             <div className="affiliate-disclaimer">

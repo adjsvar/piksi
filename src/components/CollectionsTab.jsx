@@ -1,11 +1,10 @@
-import { useState } from 'react'
-import { useNavigate, useLocation } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { useLocation } from 'react-router-dom'
 import { useProducts } from '../context/ProductContext'
 import '../styles/CollectionsTab.css'
 
 const CollectionsTab = () => {
-  const { filterByCollection } = useProducts()
-  const navigate = useNavigate()
+  const { filterByCollection, showFavorites } = useProducts()
   const location = useLocation()
   const [activeCollection, setActiveCollection] = useState('todos')
 
@@ -20,15 +19,20 @@ const CollectionsTab = () => {
     { id: 'ofertas', name: 'Ofertas', color: '#f43f5e' }
   ]
 
+  // Si estamos en favoritos, no permitir cambiar la colección
   const handleCollectionChange = (collection) => {
+    if (showFavorites) return;
+    
     setActiveCollection(collection)
     filterByCollection(collection)
-    
-    // Si no estamos en la página principal, navegar a ella
-    if (location.pathname !== '/') {
-      navigate('/')
-    }
   }
+  
+  // Resetear la colección activa cuando cambia showFavorites
+  useEffect(() => {
+    if (!showFavorites) {
+      filterByCollection(activeCollection)
+    }
+  }, [showFavorites, activeCollection, filterByCollection])
 
   return (
     <div className="collections-tab">
@@ -36,10 +40,10 @@ const CollectionsTab = () => {
         {collections.map(collection => (
           <div 
             key={collection.id}
-            className="collection-item" 
+            className={`collection-item ${showFavorites ? 'disabled' : ''}`}
             onClick={() => handleCollectionChange(collection.id)}
           >
-            <div className={`collection-thumbnail ${activeCollection === collection.id ? 'active' : ''}`}>
+            <div className={`collection-thumbnail ${activeCollection === collection.id && !showFavorites ? 'active' : ''}`}>
               <div 
                 className="collection-color" 
                 style={{ background: collection.color }}

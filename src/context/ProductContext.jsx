@@ -10,6 +10,9 @@ export function useProducts() {
 export function ProductProvider({ children }) {
   const [products, setProducts] = useState(productsData)
   const [filteredProducts, setFilteredProducts] = useState([...productsData])
+  const [showFavorites, setShowFavorites] = useState(false)
+  const [currentCollection, setCurrentCollection] = useState('todos')
+  const [similarProducts, setSimilarProducts] = useState([])
   
   // Cache para productos relacionados para mejorar rendimiento
   const relatedProductsCache = new Map()
@@ -34,28 +37,6 @@ export function ProductProvider({ children }) {
       })
     })
   }, [])
-
-  // Filter products by collection - optimizado con useCallback
-  const filterByCollection = useCallback((collection) => {
-    // Limpiar caché de productos relacionados al cambiar colección
-    relatedProductsCache.clear()
-    
-    if (collection === 'todos') {
-      setFilteredProducts([...products])
-    } else if (collection === 'tech') {
-      setFilteredProducts(products.filter(product => product.category === 'tecnologia'))
-    } else if (collection === 'cocina') {
-      setFilteredProducts(products.filter(product => product.category === 'cocina'))
-    } else if (collection === 'hogar') {
-      setFilteredProducts(products.filter(product => product.category === 'hogar'))
-    } else if (collection === 'fitness') {
-      setFilteredProducts(products.filter(product => product.category === 'fitness'))
-    } else if (collection === 'ofertas') {
-      setFilteredProducts(products.filter(product => parseFloat(product.discount) >= 20))
-    } else {
-      setFilteredProducts([...products])
-    }
-  }, [products])
 
   // Get related products - optimizado con useCallback y caché
   const getRelatedProducts = useCallback((productId, count = 4) => {
@@ -128,12 +109,97 @@ export function ProductProvider({ children }) {
     return result
   }, [products])
 
+  // Toggle mostrar favoritos
+  const toggleShowFavorites = useCallback(() => {
+    setShowFavorites(prev => {
+      const newValue = !prev;
+      
+      if (newValue) {
+        // Mostrar favoritos
+        const favorites = products.filter(product => product.piked);
+        setFilteredProducts(favorites);
+        
+        // Generar recomendaciones si hay favoritos
+        if (favorites.length > 0) {
+          const allSimilar = [];
+          favorites.forEach(fav => {
+            const similar = getRelatedProducts(fav.id, 4);
+            allSimilar.push(...similar);
+          });
+          
+          // Eliminar duplicados y favoritos
+          const uniqueSimilar = allSimilar.filter((product, index, self) => {
+            const uniqueIndex = self.findIndex(p => p.id === product.id);
+            const isFavorite = favorites.some(fav => fav.id === product.id);
+            return index === uniqueIndex && !isFavorite;
+          });
+          
+          setSimilarProducts(uniqueSimilar.slice(0, 12));
+        } else {
+          setSimilarProducts([]);
+        }
+      } else {
+        // Mostrar productos normales según colección
+        if (currentCollection === 'todos') {
+          setFilteredProducts([...products]);
+        } else if (currentCollection === 'tech') {
+          setFilteredProducts(products.filter(product => product.category === 'tecnologia'));
+        } else if (currentCollection === 'cocina') {
+          setFilteredProducts(products.filter(product => product.category === 'cocina'));
+        } else if (currentCollection === 'hogar') {
+          setFilteredProducts(products.filter(product => product.category === 'hogar'));
+        } else if (currentCollection === 'fitness') {
+          setFilteredProducts(products.filter(product => product.category === 'fitness'));
+        } else if (currentCollection === 'ofertas') {
+          setFilteredProducts(products.filter(product => parseFloat(product.discount) >= 20));
+        }
+        
+        setSimilarProducts([]);
+      }
+      
+      return newValue;
+    });
+  }, [currentCollection, products, getRelatedProducts]);
+
+  // Filter products by collection - optimizado con useCallback
+  const filterByCollection = useCallback((collection) => {
+    // Actualizar colección actual
+    setCurrentCollection(collection)
+    
+    // Si estamos mostrando favoritos, no cambiar el filtro
+    if (showFavorites) {
+      return
+    }
+    
+    // Limpiar caché de productos relacionados al cambiar colección
+    relatedProductsCache.clear()
+    
+    if (collection === 'todos') {
+      setFilteredProducts([...products])
+    } else if (collection === 'tech') {
+      setFilteredProducts(products.filter(product => product.category === 'tecnologia'))
+    } else if (collection === 'cocina') {
+      setFilteredProducts(products.filter(product => product.category === 'cocina'))
+    } else if (collection === 'hogar') {
+      setFilteredProducts(products.filter(product => product.category === 'hogar'))
+    } else if (collection === 'fitness') {
+      setFilteredProducts(products.filter(product => product.category === 'fitness'))
+    } else if (collection === 'ofertas') {
+      setFilteredProducts(products.filter(product => parseFloat(product.discount) >= 20))
+    } else {
+      setFilteredProducts([...products])
+    }
+  }, [products, showFavorites])
+
   const value = {
     products,
     filteredProducts,
+    similarProducts,
+    showFavorites,
     toggleProductPik,
     filterByCollection,
-    getRelatedProducts
+    getRelatedProducts,
+    toggleShowFavorites
   }
 
   return (
