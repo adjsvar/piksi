@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Routes, Route, useLocation } from 'react-router-dom'
 import Navbar from './components/Navbar'
+import SearchBar from './components/SearchBar'
 import ProductsGrid from './components/ProductsGrid'
 import ProductDetail from './components/ProductDetail'
 import Notification from './components/Notification'
@@ -37,10 +38,14 @@ function App() {
       <div className="piksi-app">
         <Navbar />
         
-        <Routes>
-          <Route path="/" element={<ProductsGrid showNotification={showNotification} />} />
-          <Route path="/product/:productId" element={<ProductDetail showNotification={showNotification} />} />
-        </Routes>
+        <div className="main-container">
+          <SearchBar />
+          
+          <Routes>
+            <Route path="/" element={<ProductsGrid showNotification={showNotification} />} />
+            <Route path="/product/:productId" element={<ProductDetail showNotification={showNotification} />} />
+          </Routes>
+        </div>
 
         {notification.show && notification.product && (
           <Notification 

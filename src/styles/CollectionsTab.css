@@ -1,7 +1,7 @@
 .collections-tab {
   width: 100%;
   display: flex;
-  padding: 0.875rem;
+  padding: 1rem 0.5rem;
   overflow-x: auto;
   white-space: nowrap;
   scrollbar-width: none;
@@ -27,7 +27,13 @@
   flex-direction: column;
   align-items: center;
   cursor: pointer;
-  min-width: 5rem;
+  min-width: 6rem;
+  transition: all 0.3s ease;
+}
+
+.collection-item.active {
+  min-width: 7.5rem;
+  transform: scale(1.05);
 }
 
 .collection-item.disabled {
@@ -36,37 +42,66 @@
 }
 
 .collection-thumbnail {
-  width: 4rem;
-  height: 4rem;
-  border-radius: 50%;
-  background-color: #f3f4f6;
-  margin-bottom: 0.5rem;
+  width: 6rem;
+  height: 7rem;
+  border-radius: 0.75rem;
   overflow: hidden;
   position: relative;
   border: 2px solid transparent;
-  transition: border-color 0.2s ease;
+  transition: all 0.3s ease;
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
-.collection-thumbnail.active {
-  border-color: #4ac6b7;
+.collection-item.active .collection-thumbnail {
+  width: 7.5rem;
+  border-color: #fff;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
 }
 
 .collection-color {
   position: absolute;
   inset: 0;
+  background: linear-gradient(to bottom, transparent 50%, rgba(0, 0, 0, 0.8) 100%);
 }
 
 .collection-name {
-  font-size: 0.75rem;
-  color: #4b5563;
+  position: absolute;
+  bottom: 0.5rem;
+  left: 0;
+  right: 0;
   text-align: center;
-  max-width: 5rem;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: white;
+  z-index: 2;
+  padding: 0 0.5rem;
+}
+
+.collection-posts {
+  position: absolute;
+  bottom: 2rem;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.8);
+  z-index: 2;
 }
 
 @media (max-width: 768px) {
   .collections-container {
     justify-content: flex-start;
+  }
+  
+  .collection-thumbnail {
+    width: 5rem;
+    height: 6rem;
+  }
+  
+  .collection-item.active .collection-thumbnail {
+    width: 6rem;
   }
 }

@@ -1,17 +1,19 @@
-.main-content {
-  padding-top: 14rem;
-  padding-left: 1rem;
-  padding-right: 1rem;
-  padding-bottom: 2rem;
-  margin: 0 auto;
-  max-width: 1400px;
+.pinterest-grid {
+  column-count: 6; /* 6 columnas en pantallas grandes */
+  column-gap: 10px;
+  width: 100%;
+  margin-top: 1rem;
 }
 
-.products-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  grid-gap: 1.25rem;
-  width: 100%;
+.pinterest-item {
+  break-inside: avoid; /* Evita que los elementos se corten entre columnas */
+  margin-bottom: 10px;
+  display: block;
+}
+
+/* Las tarjetas pequeñas tienen menos altura */
+.pinterest-item.small .product-image {
+  aspect-ratio: 9/12; /* Un 25% menos alto */
 }
 
 .section-title {
@@ -36,14 +38,7 @@
   border-radius: 0.25rem;
 }
 
-.similar-section-title {
-  margin-top: 3rem;
-  padding-top: 2rem;
-  border-top: 1px solid #e5e7eb;
-}
-
 .no-products-message {
-  grid-column: 1 / -1;
   text-align: center;
   padding: 3rem 0;
 }
@@ -59,16 +54,22 @@
   color: #9ca3af !important;
 }
 
-@media (max-width: 640px) {
-  .products-grid {
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-    grid-gap: 1rem;
+/* Modo responsive */
+@media (max-width: 1600px) {
+  .pinterest-grid {
+    column-count: 5;
   }
-  
-  .main-content {
-    padding-top: 14rem;
-    padding-left: 0.5rem;
-    padding-right: 0.5rem;
+}
+
+@media (max-width: 1280px) {
+  .pinterest-grid {
+    column-count: 4;
+  }
+}
+
+@media (max-width: 960px) {
+  .pinterest-grid {
+    column-count: 3;
   }
   
   .section-title h2 {
@@ -76,10 +77,8 @@
   }
 }
 
-@media (min-width: 1280px) {
-  .products-grid {
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    grid-gap: 1.5rem;
+@media (max-width: 640px) {
+  .pinterest-grid {
+    column-count: 2;
   }
 }
-

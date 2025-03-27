@@ -1,10 +1,6 @@
-.product-card-wrapper {
-  margin-bottom: 1.25rem;
-}
-
 .product-card {
   position: relative;
-  border-radius: 3px;
+  border-radius: 10px;
   overflow: hidden;
   background-color: white;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
@@ -25,10 +21,15 @@
   width: 100%;
   display: block;
   background-color: #e5e7eb;
-  border-radius: 3px;
-  aspect-ratio: 9/16;
+  border-radius: 10px;
+  aspect-ratio: 9/16; /* Volver a la proporción original */
   overflow: hidden;
   border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+/* Las tarjetas pequeñas tienen menos altura */
+.small .product-image {
+  aspect-ratio: 9/12; /* Un 25% menos alto */
 }
 
 .product-color-bg {
@@ -37,7 +38,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 3px;
+  border-radius: 10px;
 }
 
 .product-thumbnail {
@@ -45,8 +46,8 @@
   inset: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover;
-  border-radius: 3px;
+  object-fit: cover; /* Mantener object-fit: cover */
+  border-radius: 10px;
   transition: filter 0.2s ease;
 }
 
@@ -59,7 +60,7 @@
   inset: 0;
   z-index: 2;
   overflow: hidden;
-  border-radius: 3px;
+  border-radius: 10px;
   width: 100%;
   height: 100%;
   border: 1px solid rgba(0, 0, 0, 0.1);
@@ -99,8 +100,8 @@
 
 .pik-button-container {
   position: absolute;
-  top: 0.75rem;
-  right: 0.75rem;
+  top: 0.5rem;
+  right: 0.5rem;
   z-index: 10;
   opacity: 0;
   transition: opacity 0.2s ease;
@@ -111,8 +112,8 @@
 }
 
 .pik-button {
-  width: 2.5rem;
-  height: 2.5rem;
+  width: 2rem;
+  height: 2rem;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -135,16 +136,49 @@
   color: white;
 }
 
+.share-button-container {
+  position: absolute;
+  top: 0.5rem;
+  right: 2.75rem;
+  z-index: 10;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.product-card:hover .share-button-container {
+  opacity: 1;
+}
+
+.share-button {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  background-color: white;
+  color: #4b5563;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.share-button:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+}
+
 .product-title-overlay {
   position: absolute;
   bottom: 0;
   left: 0;
   right: 0;
   background-color: rgba(0, 0, 0, 0.7);
-  padding: 0.75rem;
+  padding: 0.5rem;
   opacity: 0;
   transition: opacity 0.2s ease;
-  border-radius: 0 0 3px 3px;
+  border-radius: 0 0 10px 10px;
   display: flex;
   align-items: center;
   z-index: 5;
@@ -156,16 +190,24 @@
 
 .product-title-text-overlay {
   color: white;
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   font-weight: 500;
   margin: 0;
   line-height: 1.4;
 }
 
+/* Media queries para responsividad */
 @media (max-width: 640px) {
-  .pik-button {
-    width: 2rem;
-    height: 2rem;
+  .pik-button, .share-button {
+    width: 1.75rem;
+    height: 1.75rem;
+  }
+  
+  .share-button-container {
+    right: 2.5rem;
+  }
+  
+  .product-title-text-overlay {
+    font-size: 0.75rem;
   }
 }
-

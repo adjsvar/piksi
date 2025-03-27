@@ -9,14 +9,54 @@ const CollectionsTab = () => {
   const [activeCollection, setActiveCollection] = useState('todos')
 
   const collections = [
-    { id: 'todos', name: 'Todos', color: 'linear-gradient(to right, #4ac6b7, #9370db)' },
-    { id: 'tech', name: 'Tech', color: '#1E90FF' },
-    { id: 'cocina', name: 'Cocina', color: '#FF6347' },
-    { id: 'hogar', name: 'Hogar', color: '#32CD32' },
-    { id: 'fitness', name: 'Fitness', color: '#9370DB' },
-    { id: 'mascotas', name: 'Mascotas', color: '#FF69B4' },
-    { id: 'viajes', name: 'Viajes', color: '#FFD700' },
-    { id: 'ofertas', name: 'Ofertas', color: '#f43f5e' }
+    { 
+      id: 'todos', 
+      name: 'Todos', 
+      color: 'linear-gradient(to right, #4ac6b7, #9370db)',
+      posts: '5,000+'
+    },
+    { 
+      id: 'tech', 
+      name: 'Tech', 
+      color: '#1E90FF',
+      posts: '2,500+'
+    },
+    { 
+      id: 'cocina', 
+      name: 'Cocina', 
+      color: '#FF6347',
+      posts: '1,800+'
+    },
+    { 
+      id: 'hogar', 
+      name: 'Hogar', 
+      color: '#32CD32',
+      posts: '3,200+'
+    },
+    { 
+      id: 'fitness', 
+      name: 'Fitness', 
+      color: '#9370DB',
+      posts: '1,500+'
+    },
+    { 
+      id: 'mascotas', 
+      name: 'Mascotas', 
+      color: '#FF69B4',
+      posts: '2,100+'
+    },
+    { 
+      id: 'viajes', 
+      name: 'Viajes', 
+      color: '#FFD700',
+      posts: '1,900+'
+    },
+    { 
+      id: 'ofertas', 
+      name: 'Ofertas', 
+      color: '#f43f5e',
+      posts: '900+'
+    }
   ]
 
   // Si estamos en favoritos, no permitir cambiar la colección
@@ -40,16 +80,19 @@ const CollectionsTab = () => {
         {collections.map(collection => (
           <div 
             key={collection.id}
-            className={`collection-item ${showFavorites ? 'disabled' : ''}`}
+            className={`collection-item ${activeCollection === collection.id && !showFavorites ? 'active' : ''} ${showFavorites ? 'disabled' : ''}`}
             onClick={() => handleCollectionChange(collection.id)}
           >
-            <div className={`collection-thumbnail ${activeCollection === collection.id && !showFavorites ? 'active' : ''}`}>
+            <div 
+              className="collection-thumbnail"
+              style={{ background: collection.color }}
+            >
               <div 
-                className="collection-color" 
-                style={{ background: collection.color }}
+                className="collection-color"
               ></div>
+              <div className="collection-posts">{collection.posts}</div>
+              <div className="collection-name">{collection.name}</div>
             </div>
-            <div className="collection-name">{collection.name}</div>
           </div>
         ))}
       </div>

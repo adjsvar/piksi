@@ -1,21 +1,62 @@
+import { useEffect } from 'react'
 import { useProducts } from '../context/ProductContext'
 import ProductCard from './ProductCard'
 import '../styles/ProductsGrid.css'
 
 const ProductsGrid = ({ showNotification }) => {
-  const { filteredProducts } = useProducts()
+  const { filteredProducts, currentCollection, showFavorites } = useProducts()
+
+  // Función para obtener el nombre de la categoría para el título
+  const getCategoryTitle = () => {
+    if (showFavorites) return "Piks"
+    
+    switch(currentCollection) {
+      case 'todos': return "Todos los Productos"
+      case 'tech': return "Tecnología"
+      case 'cocina': return "Cocina"
+      case 'hogar': return "Hogar"
+      case 'fitness': return "Fitness"
+      case 'mascotas': return "Mascotas"
+      case 'viajes': return "Viajes"
+      case 'ofertas': return "Ofertas"
+      default: return "Todos los Productos"
+    }
+  }
+
+  // Determinar si un producto debe tener tamaño más pequeño
+  const isSmallItem = (index) => {
+    // Aproximadamente cada 4º item será más pequeño
+    return index % 4 === 2;
+  }
 
   return (
     <main className="main-content" id="homeContent">
-      <div className="products-grid">
-        {filteredProducts.map(product => (
-          <ProductCard 
-            key={product.id} 
-            product={product} 
-            showNotification={showNotification} 
-          />
-        ))}
+      <div className="section-title">
+        <h2>{getCategoryTitle()}</h2>
       </div>
+      
+      {filteredProducts.length === 0 ? (
+        <div className="no-products-message">
+          <p>No hay productos disponibles en esta categoría.</p>
+          {showFavorites && (
+            <p className="no-products-sub">Guarda productos para verlos aquí.</p>
+          )}
+        </div>
+      ) : (
+        <div className="pinterest-grid">
+          {filteredProducts.map((product, index) => (
+            <div 
+              key={product.id}
+              className={`pinterest-item ${isSmallItem(index) ? 'small' : ''}`}
+            >
+              <ProductCard 
+                product={product}
+                showNotification={showNotification}
+              />
+            </div>
+          ))}
+        </div>
+      )}
     </main>
   )
 }
