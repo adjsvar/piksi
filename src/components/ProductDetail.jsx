@@ -190,22 +190,6 @@ const ProductDetail = ({ showNotification }) => {
 
   return (
     <div className="product-detail-page">
-      <Link to="/" className="back-to-home">
-        <svg 
-          xmlns="http://www.w3.org/2000/svg" 
-          width="24" 
-          height="24" 
-          viewBox="0 0 24 24" 
-          fill="none" 
-          stroke="currentColor" 
-          strokeWidth="2" 
-          strokeLinecap="round" 
-          strokeLinejoin="round"
-        >
-          <line x1="19" y1="12" x2="5" y2="12"></line>
-          <polyline points="12 19 5 12 12 5"></polyline>
-        </svg>
-      </Link>
       <div className="product-detail-content">
         <div className="product-detail-main">
           {/* Columna izquierda: Video */}
@@ -320,19 +304,10 @@ const ProductDetail = ({ showNotification }) => {
             
             <h2 className="product-detail-title">{product.title}</h2>
             
-            <div className="product-detail-price-container">
-              <div className="product-detail-price">€{product.price.toFixed(2)}</div>
-              <div className="product-detail-price-original">€{product.originalPrice.toFixed(2)}</div>
-              <div className="product-detail-discount">-{product.discount}</div>
-            </div>
-            
-            <div className="product-detail-rating">
-              <div className="rating-stars">
-                {'★'.repeat(Math.floor(product.rating))}
-                {product.rating % 1 >= 0.5 ? '½' : ''}
-              </div>
-              <div className="rating-number">{product.rating}</div>
-              <div className="rating-count">({product.reviewCount} valoraciones)</div>
+            <div className="product-description">
+              <p>
+                Descubre este increíble producto seleccionado especialmente para ti. Con calidad premium y diseño innovador, es perfecto para tu estilo de vida. Miles de usuarios ya lo han probado y se ha convertido en un imprescindible. No te pierdas esta oferta por tiempo limitado.
+              </p>
             </div>
             
             <div className="product-detail-action-buttons">
@@ -342,20 +317,6 @@ const ProductDetail = ({ showNotification }) => {
                 target="_blank" 
                 rel="noopener noreferrer"
               >
-                <svg 
-                  xmlns="http://www.w3.org/2000/svg" 
-                  width="20" 
-                  height="20" 
-                  viewBox="0 0 24 24" 
-                  fill="none" 
-                  stroke="currentColor" 
-                  strokeWidth="2" 
-                  strokeLinecap="round" 
-                  strokeLinejoin="round"
-                >
-                  <path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path>
-                  <line x1="12" y1="2" x2="12" y2="12"></line>
-                </svg>
                 Ver oferta en Amazon
               </a>
             </div>

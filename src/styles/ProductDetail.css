@@ -26,7 +26,7 @@
   margin: 0 auto;
   position: relative;
   background-color: #000;
-  border-radius: 3px;
+  border-radius: 10px;
   overflow: hidden;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
   border: none;
@@ -45,7 +45,6 @@
   position: relative;
   overflow: hidden;
   border-radius: 3px;
-  border: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 .detail-video-placeholder {
@@ -146,7 +145,18 @@
   font-size: 1.5rem;
   font-weight: 700;
   color: #1f2937;
-  margin-bottom: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.product-description {
+  margin-bottom: 1.25rem;
+}
+
+.product-description p {
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: #4b5563;
+  font-weight: 400;
 }
 
 .product-detail-price-container {
