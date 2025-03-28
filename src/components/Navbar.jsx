@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { Link } from 'react-router-dom'
+import { useNavigate, Link, useLocation } from 'react-router-dom'
 import { useProducts } from '../context/ProductContext'
 import '../styles/Navbar.css'
 
@@ -15,7 +14,13 @@ const Navbar = () => {
   } = useProducts()
   
   const navigate = useNavigate()
+  const location = useLocation()
   const [showCategories, setShowCategories] = useState(false)
+
+  // Cerrar menú de categorías cuando se cambia de página
+  useEffect(() => {
+    setShowCategories(false);
+  }, [location.pathname]);
 
   const handleMyPiksClick = () => {
     toggleShowFavorites()
@@ -39,9 +44,7 @@ const Navbar = () => {
     { id: 'cocina', name: 'Cocina', icon: 'utensils' },
     { id: 'hogar', name: 'Hogar', icon: 'couch' },
     { id: 'fitness', name: 'Fitness', icon: 'dumbbell' },
-    { id: 'mascotas', name: 'Mascotas', icon: 'paw' },
-    { id: 'viajes', name: 'Viajes', icon: 'plane' },
-    { id: 'ofertas', name: 'Ofertas', icon: 'tag' }
+    { id: 'mascotas', name: 'Mascotas', icon: 'paw' }
   ]
 
   const handleCategoryClick = (categoryId) => {
@@ -64,7 +67,7 @@ const Navbar = () => {
   }
 
   const toggleCategories = () => {
-    setShowCategories(!showCategories)
+    setShowCategories(prevState => !prevState)
   }
 
   const handleHomeClick = () => {
@@ -139,17 +142,6 @@ const Navbar = () => {
                       <path d="M12 20a7 7 0 1 0 0-14 7 7 0 0 0 0 14Z"></path>
                     </svg>
                   )}
-                  {category.icon === 'plane' && (
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"></path>
-                    </svg>
-                  )}
-                  {category.icon === 'tag' && (
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2Z"></path>
-                      <path d="M7 7h.01"></path>
-                    </svg>
-                  )}
                 </div>
                 <span className="category-name">{category.name}</span>
               </div>
@@ -175,11 +167,11 @@ const Navbar = () => {
           </button>
         </div>
         
-        <div className="profile-container">
-          <div className="profile-pic">
+        <Link to="/profile" className="profile-container">
+          <div className={`profile-pic ${location.pathname === '/profile' ? 'active' : ''}`}>
             <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="Profile" />
           </div>
-        </div>
+        </Link>
       </div>
       
       {/* Navbar móvil */}
@@ -208,15 +200,15 @@ const Navbar = () => {
           <span>Piks</span>
         </div>
         
-        <div className="mobile-nav-item">
+        <Link to="/profile" className={`mobile-nav-item ${location.pathname === '/profile' ? 'active' : ''}`}>
           <div className="profile-pic" style={{ width: '24px', height: '24px', marginBottom: '4px' }}>
             <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="Profile" />
           </div>
           <span>Perfil</span>
-        </div>
+        </Link>
       </nav>
 
-      {/* Dropdown de categorías para móvil */}
+      {/* Dropdown de categorías para móvil - Ahora desde abajo con wrap */}
       {showCategories && (
         <div className="categories-dropdown">
           <div className="categories-list">

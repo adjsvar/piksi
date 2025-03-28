@@ -10,6 +10,7 @@
   display: block;
   text-decoration: none;
   border: none;
+  width: 100%;
 }
 
 .product-card:hover {
@@ -43,11 +44,12 @@
   height: 100%;
   object-fit: cover;
   border-radius: 10px;
-  transition: filter 0.2s ease;
+  transition: all 0.2s ease;
 }
 
+/* Cambio del hover para oscurecer en vez de aplicar filtro */
 .product-card:hover .product-thumbnail {
-  filter: brightness(1.15) contrast(0.92) saturate(1.08);
+  filter: brightness(0.85); /* Reduce el brillo para oscurecer la imagen */
 }
 
 .video-container {
@@ -61,6 +63,7 @@
   border: none;
 }
 
+/* Este efecto ya no aplica un filtro sino una capa semitransparente más oscura */
 .product-card:after {
   content: "";
   position: absolute;
@@ -68,14 +71,14 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(255, 255, 255, 0);
+  background-color: rgba(0, 0, 0, 0);
   transition: background-color 0.2s ease;
   pointer-events: none;
   z-index: 3;
 }
 
 .product-card:hover:after {
-  background-color: rgba(255, 255, 255, 0.06);
+  background-color: rgba(0, 0, 0, 0.1); /* Usar negro semitransparente para oscurecer */
 }
 
 .trending-badge {
@@ -107,13 +110,13 @@
 }
 
 .pik-button {
-  width: 2rem;
-  height: 2rem;
+  width: 1.6rem;
+  height: 1.6rem;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
   background-color: white;
   color: #4b5563;
   border: none;
@@ -123,7 +126,7 @@
 
 .pik-button:hover {
   transform: scale(1.1);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 .pik-button.active {
@@ -134,7 +137,7 @@
 .share-button-container {
   position: absolute;
   top: 0.5rem;
-  right: 2.75rem;
+  right: 2.3rem;
   z-index: 10;
   opacity: 0;
   transition: opacity 0.2s ease;
@@ -145,13 +148,13 @@
 }
 
 .share-button {
-  width: 2rem;
-  height: 2rem;
+  width: 1.6rem;
+  height: 1.6rem;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
   background-color: white;
   color: #4b5563;
   border: none;
@@ -161,7 +164,7 @@
 
 .share-button:hover {
   transform: scale(1.1);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 .product-title-overlay {
@@ -171,15 +174,10 @@
   right: 0;
   background-color: rgba(0, 0, 0, 0.7);
   padding: 0.5rem;
-  opacity: 0;
-  transition: opacity 0.2s ease;
   border-radius: 0 0 10px 10px;
   display: flex;
   align-items: center;
   z-index: 5;
-}
-
-.product-card:hover .product-title-overlay {
   opacity: 1;
 }
 
@@ -189,4 +187,25 @@
   font-weight: 500;
   margin: 0;
   line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+}
+
+/* Para dispositivos móviles */
+@media (max-width: 767px) {
+  .pik-button-container,
+  .share-button-container {
+    opacity: 1; /* Siempre visible en móvil */
+  }
+  
+  .product-title-overlay {
+    padding: 0.4rem;
+  }
+  
+  .product-title-text-overlay {
+    font-size: 0.75rem;
+  }
 }

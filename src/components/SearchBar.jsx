@@ -40,7 +40,7 @@ const SearchBar = () => {
           </div>
           <input 
             type="text" 
-            placeholder="Buscar productos, gadgets, ideas..." 
+            placeholder="Buscar productos" 
             className="search-input" 
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}

@@ -4,6 +4,7 @@ import Navbar from './components/Navbar'
 import SearchBar from './components/SearchBar'
 import ProductsGrid from './components/ProductsGrid'
 import ProductDetail from './components/ProductDetail'
+import ProfilePage from './components/ProfilePage'
 import Notification from './components/Notification'
 import { ProductProvider } from './context/ProductContext'
 
@@ -39,15 +40,20 @@ function App() {
         <Navbar />
         
         <div className="main-container">
-          <div className="mobile-header">
-            <h1 className="mobile-title">Para ti</h1>
-          </div>
-          
-          <SearchBar />
-          
           <Routes>
-            <Route path="/" element={<ProductsGrid showNotification={showNotification} />} />
-            <Route path="/product/:productId" element={<ProductDetail showNotification={showNotification} />} />
+            <Route path="/" element={
+              <>
+                <SearchBar />
+                <ProductsGrid showNotification={showNotification} />
+              </>
+            } />
+            <Route path="/product/:productId" element={
+              <>
+                <SearchBar />
+                <ProductDetail showNotification={showNotification} />
+              </>
+            } />
+            <Route path="/profile" element={<ProfilePage />} />
           </Routes>
         </div>
 

@@ -31,34 +31,9 @@ body {
   width: calc(100% - 80px);
 }
 
-/* Header móvil */
+/* Header móvil - eliminado */
 .mobile-header {
-  display: none; /* Por defecto oculto */
-  padding: 16px;
-  border-bottom: 1px solid #f0f0f0;
-  background-color: white;
-  position: sticky;
-  top: 0;
-  z-index: 20;
-}
-
-.mobile-title {
-  font-size: 18px;
-  font-weight: 600;
-  color: #111;
-  position: relative;
-  display: inline-block;
-}
-
-.mobile-title::after {
-  content: '';
-  position: absolute;
-  bottom: -16px;
-  left: 0;
-  width: 48px;
-  height: 3px;
-  background-color: #111;
-  border-radius: 3px;
+  display: none;
 }
 
 /* Animaciones y transiciones */
@@ -230,10 +205,6 @@ body {
 
 /* Media queries para modo móvil */
 @media (max-width: 767px) {
-  .mobile-header {
-    display: block;
-  }
-  
   .main-container {
     margin-left: 0;
     width: 100%;

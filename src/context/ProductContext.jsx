@@ -1,4 +1,4 @@
-import { createContext, useState, useContext, useCallback, useEffect } from 'react'
+import { createContext, useState, useContext, useCallback, useEffect, useMemo } from 'react'
 import productsData from '../data/products'
 
 const ProductContext = createContext()
@@ -20,12 +20,13 @@ export function ProductProvider({ children }) {
 
   // Aplicar filtro inicial
   useEffect(() => {
-    applyFilter('todos')
+    console.log("Inicializando productos...");
+    setFilteredProducts([...products])
   }, [])
 
-  // Función para aplicar filtro
+  // Aplicar filtro
   const applyFilter = useCallback((collection) => {
-    console.log("Filtrando por:", collection)
+    console.log(`Aplicando filtro: ${collection}`)
     
     // Si hay una búsqueda activa, no aplicamos filtro de categoría
     if (searchActive) return
@@ -42,10 +43,6 @@ export function ProductProvider({ children }) {
       setFilteredProducts(products.filter(product => product.category === 'fitness'))
     } else if (collection === 'mascotas') {
       setFilteredProducts(products.filter(product => product.category === 'mascotas'))
-    } else if (collection === 'viajes') {
-      setFilteredProducts(products.filter(product => product.category === 'viajes'))
-    } else if (collection === 'ofertas') {
-      setFilteredProducts(products.filter(product => parseFloat(product.discount) >= 20))
     } else {
       setFilteredProducts([...products])
     }

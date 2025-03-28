@@ -2,7 +2,7 @@
   position: sticky;
   top: 0;
   width: 100%;
-  padding: 1rem 1rem;
+  padding: 0.75rem 1rem;
   display: flex;
   justify-content: center;
   background-color: rgba(245, 245, 245, 0.98);
@@ -12,7 +12,7 @@
 
 .search-form {
   width: 100%;
-  max-width: 650px;
+  max-width: 900px; /* Aumentado para ocupar más espacio */
 }
 
 .search-wrapper {
@@ -39,7 +39,7 @@
 
 .search-input {
   width: 100%;
-  padding: 0.9rem 3rem;
+  padding: 0.8rem 3rem;
   border-radius: 24px;
   background: white;
   border: none;
@@ -76,14 +76,13 @@
 /* Estilos para móvil */
 @media (max-width: 767px) {
   .search-bar-container {
-    top: 53px; /* Altura del header mobile */
-    padding: 0.5rem 1rem 0.5rem;
+    padding: 0.5rem 0.75rem;
     background-color: white;
     border-bottom: 1px solid #f0f0f0;
   }
   
   .search-input {
-    padding: 0.75rem 3rem;
+    padding: 0.7rem 3rem;
     font-size: 0.9rem;
     background-color: #f5f5f5;
   }

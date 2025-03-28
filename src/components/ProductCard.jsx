@@ -37,28 +37,12 @@ const ProductCard = ({ product, showNotification }) => {
         <div className="product-image">
           <div className="product-color-bg" style={{ backgroundColor: '#000' }}>
             {product.videoId && (
-              <>
-                <img 
-                  src={`https://img.youtube.com/vi/${product.videoId}/maxresdefault.jpg`} 
-                  className="product-thumbnail" 
-                  alt={product.title} 
-                />
-                <svg 
-                  xmlns="http://www.w3.org/2000/svg" 
-                  width="40" 
-                  height="40" 
-                  viewBox="0 0 24 24" 
-                  fill="white" 
-                  stroke="white" 
-                  strokeWidth="2" 
-                  strokeLinecap="round" 
-                  strokeLinejoin="round" 
-                  style={{ position: 'absolute', zIndex: 5, opacity: 0.9 }}
-                >
-                  <circle cx="12" cy="12" r="10"></circle>
-                  <polygon points="10 8 16 12 10 16 10 8" fill="black" stroke="black"></polygon>
-                </svg>
-              </>
+              <img 
+                src={`https://img.youtube.com/vi/${product.videoId}/maxresdefault.jpg`} 
+                className="product-thumbnail" 
+                alt={product.title} 
+              />
+              /* Eliminado el icono de reproducción */
             )}
           </div>
           
@@ -75,8 +59,8 @@ const ProductCard = ({ product, showNotification }) => {
             >
               <svg 
                 xmlns="http://www.w3.org/2000/svg" 
-                width="16" 
-                height="16" 
+                width="14" 
+                height="14" 
                 viewBox="0 0 24 24" 
                 fill={product.piked ? 'currentColor' : 'none'} 
                 stroke="currentColor" 
@@ -96,8 +80,8 @@ const ProductCard = ({ product, showNotification }) => {
             >
               <svg 
                 xmlns="http://www.w3.org/2000/svg" 
-                width="16" 
-                height="16" 
+                width="14" 
+                height="14" 
                 viewBox="0 0 24 24" 
                 fill="none" 
                 stroke="currentColor" 

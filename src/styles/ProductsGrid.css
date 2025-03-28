@@ -1,41 +1,22 @@
+/* Cambiando de un sistema de columnas a un grid real */
 .pinterest-grid {
-  column-count: 6; /* 6 columnas en pantallas grandes */
-  column-gap: 10px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
   width: 100%;
-  margin-top: 1rem;
+  margin-top: 0.5rem;
+  padding: 0.5rem;
 }
 
 .pinterest-item {
-  break-inside: avoid; /* Evita que los elementos se corten entre columnas */
-  margin-bottom: 10px;
-  display: block;
-}
-
-.section-title {
-  margin-bottom: 1.5rem;
-}
-
-.section-title h2 {
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: #1f2937;
-  display: flex;
-  align-items: center;
-}
-
-.section-title h2::before {
-  content: "";
-  display: inline-block;
-  width: 0.5rem;
-  height: 1.5rem;
-  background-color: #4ac6b7;
-  margin-right: 0.75rem;
-  border-radius: 0.25rem;
+  width: 100%;
+  margin-bottom: 0; /* No necesitamos margin-bottom adicional con grid */
 }
 
 .no-products-message {
   text-align: center;
   padding: 3rem 0;
+  grid-column: 1 / -1; /* Abarca todas las columnas */
 }
 
 .no-products-message p {
@@ -49,31 +30,32 @@
   color: #9ca3af !important;
 }
 
-/* Modo responsive */
-@media (max-width: 1600px) {
+/* Media queries para ajustar el tamaño de las cards */
+@media (min-width: 1600px) {
   .pinterest-grid {
-    column-count: 5;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   }
 }
 
-@media (max-width: 1280px) {
+@media (max-width: 992px) {
   .pinterest-grid {
-    column-count: 4;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 0.875rem;
   }
 }
 
-@media (max-width: 960px) {
+@media (max-width: 768px) {
   .pinterest-grid {
-    column-count: 3;
-  }
-  
-  .section-title h2 {
-    font-size: 1.25rem;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 0.75rem;
+    padding: 0.375rem;
   }
 }
 
-@media (max-width: 640px) {
+@media (max-width: 480px) {
   .pinterest-grid {
-    column-count: 2;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 0.625rem;
+    padding: 0.25rem;
   }
 }
