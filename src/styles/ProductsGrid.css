@@ -11,11 +11,6 @@
   display: block;
 }
 
-/* Las tarjetas pequeñas tienen menos altura */
-.pinterest-item.small .product-image {
-  aspect-ratio: 9/12; /* Un 25% menos alto */
-}
-
 .section-title {
   margin-bottom: 1.5rem;
 }

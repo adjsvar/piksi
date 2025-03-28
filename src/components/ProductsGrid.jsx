@@ -23,12 +23,6 @@ const ProductsGrid = ({ showNotification }) => {
     }
   }
 
-  // Determinar si un producto debe tener tamaño más pequeño
-  const isSmallItem = (index) => {
-    // Aproximadamente cada 4º item será más pequeño
-    return index % 4 === 2;
-  }
-
   return (
     <main className="main-content" id="homeContent">
       <div className="section-title">
@@ -47,7 +41,7 @@ const ProductsGrid = ({ showNotification }) => {
           {filteredProducts.map((product, index) => (
             <div 
               key={product.id}
-              className={`pinterest-item ${isSmallItem(index) ? 'small' : ''}`}
+              className="pinterest-item"
             >
               <ProductCard 
                 product={product}

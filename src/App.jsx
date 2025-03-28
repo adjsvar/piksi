@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Routes, Route, useLocation } from 'react-router-dom'
 import Navbar from './components/Navbar'
-import MobileNavbar from './components/MobileNavbar'
 import SearchBar from './components/SearchBar'
 import ProductsGrid from './components/ProductsGrid'
 import ProductDetail from './components/ProductDetail'
@@ -59,8 +58,6 @@ function App() {
             onClose={hideNotification} 
           />
         )}
-        
-        <MobileNavbar />
       </div>
     </ProductProvider>
   )
