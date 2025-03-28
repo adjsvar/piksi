@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Routes, Route, useLocation } from 'react-router-dom'
 import Navbar from './components/Navbar'
+import MobileNavbar from './components/MobileNavbar'
 import SearchBar from './components/SearchBar'
 import ProductsGrid from './components/ProductsGrid'
 import ProductDetail from './components/ProductDetail'
@@ -39,6 +40,10 @@ function App() {
         <Navbar />
         
         <div className="main-container">
+          <div className="mobile-header">
+            <h1 className="mobile-title">Para ti</h1>
+          </div>
+          
           <SearchBar />
           
           <Routes>
@@ -54,6 +59,8 @@ function App() {
             onClose={hideNotification} 
           />
         )}
+        
+        <MobileNavbar />
       </div>
     </ProductProvider>
   )

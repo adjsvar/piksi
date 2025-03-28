@@ -4,12 +4,13 @@
   height: 100%;
   display: block;
   text-decoration: none;
-  border-radius: 10px; /* Cambiado a 10px */
+  border-radius: 10px; /* Mantener bordes redondeados */
   overflow: hidden;
   background-color: white;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
   transition: transform 0.25s ease, box-shadow 0.25s ease;
-  margin-bottom: 0; /* Quitando el margen */
+  margin-bottom: 0;
+  border: none; /* Eliminar border sólido */
 }
 
 .similar-product-card:hover {
@@ -21,7 +22,7 @@
   position: relative;
   width: 100%;
   aspect-ratio: 9/16;
-  border-radius: 10px; /* Cambiado a 10px */
+  border-radius: 10px; /* Mantener bordes redondeados */
   overflow: hidden;
 }
 
@@ -70,7 +71,7 @@
   transition: opacity 0.3s ease, transform 0.3s ease;
   display: flex;
   align-items: flex-end;
-  border-radius: 0 0 10px 10px; /* Cambiado a 10px */
+  border-radius: 0 0 10px 10px; /* Mantener bordes redondeados */
 }
 
 .similar-product-card:hover .similar-product-title-overlay {

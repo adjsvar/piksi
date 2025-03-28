@@ -31,21 +31,34 @@ body {
   width: calc(100% - 80px);
 }
 
-/* Ajustamos márgenes y padding */
-.product-detail-content {
-  margin-top: 2rem;
-  padding: 0 2rem 2rem;
-  width: 100%;
-  margin-left: auto;
-  margin-right: auto;
+/* Header móvil */
+.mobile-header {
+  display: none; /* Por defecto oculto */
+  padding: 16px;
+  border-bottom: 1px solid #f0f0f0;
+  background-color: white;
+  position: sticky;
+  top: 0;
+  z-index: 20;
 }
 
-.main-content {
-  padding-top: 1rem;
-  padding-left: 2rem;
-  padding-right: 2rem;
-  padding-bottom: 2rem;
-  width: 100%;
+.mobile-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #111;
+  position: relative;
+  display: inline-block;
+}
+
+.mobile-title::after {
+  content: '';
+  position: absolute;
+  bottom: -16px;
+  left: 0;
+  width: 48px;
+  height: 3px;
+  background-color: #111;
+  border-radius: 3px;
 }
 
 /* Animaciones y transiciones */
@@ -78,6 +91,23 @@ body {
   min-height: 100vh;
   width: 100%;
   position: relative;
+}
+
+/* Ajustamos márgenes y padding */
+.product-detail-content {
+  margin-top: 2rem;
+  padding: 0 2rem 2rem;
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.main-content {
+  padding-top: 1rem;
+  padding-left: 2rem;
+  padding-right: 2rem;
+  padding-bottom: 2rem;
+  width: 100%;
 }
 
 /* Estilos para botones */
@@ -198,18 +228,39 @@ body {
   color: #6b7280;
 }
 
-@media (max-width: 768px) {
+/* Media queries para modo móvil */
+@media (max-width: 767px) {
+  .mobile-header {
+    display: block;
+  }
+  
+  .search-bar-container {
+    padding: 0 0.5rem 0.75rem;
+  }
+  
+  .search-input {
+    padding: 0.75rem 3rem;
+  }
+  
+  .mobile-nav-item {
+    font-size: 0.75rem;
+  }
+  
   .main-container {
-    margin-left: 60px;
-    width: calc(100% - 60px);
+    margin-left: 0;
+    width: 100%;
   }
   
   .main-content {
-    padding-left: 1rem;
-    padding-right: 1rem;
+    padding: 0.5rem 0.5rem 70px;
+  }
+  
+  .side-navbar {
+    display: none;
   }
   
   .product-detail-content {
-    padding: 0 1rem 2rem;
+    margin-top: 1rem;
+    padding: 0 1rem 70px;
   }
 }
