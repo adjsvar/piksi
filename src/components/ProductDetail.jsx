@@ -57,7 +57,7 @@ const ProductDetail = ({ showNotification }) => {
       setProduct(foundProduct)
       
       // Cargamos los productos iniciales
-      const related = getRelatedProducts(foundProduct.id, 12)
+      const related = getRelatedProducts(foundProduct.id, 15) // Aumentamos a 15 productos iniciales
       setRelatedProducts(related)
       
       // Cargar el iframe con un pequeño retraso
@@ -110,7 +110,7 @@ const ProductDetail = ({ showNotification }) => {
         }
         
         // Cargamos más productos
-        const moreProducts = getRelatedProducts(parsedProductId, 8)
+        const moreProducts = getRelatedProducts(parsedProductId, 10) // Aumentamos a 10 productos más
         
         // Verificamos si llegamos al límite de páginas
         const isNewCycle = nextPage > 3
@@ -126,7 +126,7 @@ const ProductDetail = ({ showNotification }) => {
         // Limitamos el número total de productos mostrados
         setRelatedProducts(prev => {
           // Si superamos el límite, eliminamos los más antiguos
-          const maxProducts = 36;
+          const maxProducts = 45; // Aumentamos el máximo para mostrar más productos
           const newProducts = [...prev, ...uniqueMoreProducts];
           return newProducts.length > maxProducts ? 
             newProducts.slice(newProducts.length - maxProducts) : 

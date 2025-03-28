@@ -4,7 +4,7 @@ import '../styles/SearchBar.css'
 
 const SearchBar = () => {
   const [searchQuery, setSearchQuery] = useState('')
-  const { products, setFilteredProducts } = useProducts()
+  const { products, setFilteredProducts, currentCollection } = useProducts()
 
   // Realizar búsqueda en tiempo real
   useEffect(() => {
@@ -15,13 +15,27 @@ const SearchBar = () => {
 
     // Filtrar productos según término de búsqueda
     const lowercaseQuery = searchQuery.toLowerCase()
-    const filtered = products.filter(product => 
+    
+    // Primero filtramos por la categoría actual
+    let baseProducts = products
+    if (currentCollection !== 'todos') {
+      let categoryName = currentCollection
+      if (currentCollection === 'tech') categoryName = 'tecnologia'
+      
+      baseProducts = products.filter(product => 
+        product.category === categoryName
+      )
+    }
+    
+    // Luego aplicamos el filtro de búsqueda sobre los productos de la categoría actual
+    const filtered = baseProducts.filter(product => 
       product.title.toLowerCase().includes(lowercaseQuery) ||
       product.category.toLowerCase().includes(lowercaseQuery)
     )
     
-    setFilteredProducts(filtered)
-  }, [searchQuery, products, setFilteredProducts])
+    // Pasamos tanto los productos filtrados como la consulta de búsqueda
+    setFilteredProducts(filtered, searchQuery)
+  }, [searchQuery, products, setFilteredProducts, currentCollection])
 
   const handleSearch = (e) => {
     e.preventDefault()

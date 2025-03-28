@@ -8,21 +8,24 @@
 }
 
 .product-detail-main {
-  display: grid;
-  grid-template-columns: 1fr;
+  display: flex;
+  flex-direction: column;
   gap: 1.5rem;
   margin-bottom: 2rem;
+  align-items: center;
 }
 
 @media (min-width: 768px) {
   .product-detail-main {
-    grid-template-columns: 360px 1fr;
+    flex-direction: row;
+    align-items: stretch;
+    justify-content: center;
   }
 }
 
 .product-detail-header {
   width: 100%;
-  max-width: 360px;
+  max-width: 450px;
   margin: 0 auto;
   position: relative;
   background-color: #000;
@@ -96,10 +99,22 @@
   border-radius: 10px;
   padding: 1.5rem;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
-  height: 100%;
+  width: 100%;
+  max-width: 450px;
   display: flex;
   flex-direction: column;
   border: none;
+  margin: 0 auto;
+  height: 100%;
+}
+
+@media (min-width: 768px) {
+  .product-detail-info {
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
 }
 
 .product-action-header {
@@ -151,10 +166,12 @@
   font-weight: 700;
   color: #1f2937;
   margin-bottom: 0.75rem;
+  text-align: center;
 }
 
 .product-description {
   margin-bottom: 1.25rem;
+  flex: 1;
 }
 
 .product-description p {
@@ -162,6 +179,7 @@
   line-height: 1.5;
   color: #4b5563;
   font-weight: 400;
+  text-align: center;
 }
 
 .product-detail-action-buttons {
@@ -169,21 +187,46 @@
   gap: 0.75rem;
   margin: 1.5rem 0;
   flex-wrap: wrap;
-  margin-top: auto;
 }
 
 .similar-products-title {
-  font-size: 1.25rem;
-  font-weight: 600;
+  font-size: 1.5rem;
+  font-weight: 700;
   color: #1f2937;
-  margin: 0 0 1rem;
+  margin: 2.5rem 0 1.5rem;
+  text-align: center;
+  width: 100%;
+  padding-bottom: 0.75rem;
+  border-bottom: 3px solid #e5e7eb;
+  text-transform: uppercase;
 }
 
 .similar-products-container {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
   grid-gap: 1rem;
   width: 100%;
+}
+
+/* Destacar el disclaimer de afiliados */
+.affiliate-disclaimer {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  border: 1px solid #e5e7eb;
+  background-color: #f9fafb;
+  border-radius: 0.5rem;
+}
+
+.affiliate-disclaimer-text {
+  font-size: 0.85rem;
+  color: #4b5563;
+  line-height: 1.5;
+  text-align: center;
+  font-weight: 500;
+}
+
+.affiliate-disclaimer-text strong {
+  color: #1f2937;
 }
 
 /* Media queries */
@@ -202,7 +245,7 @@
   }
   
   .similar-products-container {
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
     grid-gap: 0.75rem;
   }
 }
@@ -212,10 +255,16 @@
     flex-direction: column;
     align-items: flex-start;
   }
+  
+  .similar-products-title {
+    font-size: 1.25rem;
+    margin: 2rem 0 1rem;
+  }
 }
 
 @media (min-width: 1280px) {
   .similar-products-container {
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    grid-gap: 1.25rem;
   }
 }

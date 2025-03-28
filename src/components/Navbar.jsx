@@ -18,8 +18,14 @@ const Navbar = () => {
   const [showCategories, setShowCategories] = useState(false)
 
   // Cerrar menú de categorías cuando se cambia de página
+  // y marcar 'todos' como activo al iniciar
   useEffect(() => {
     setShowCategories(false);
+    
+    // Al cargar la aplicación, asegurarse que 'todos' esté seleccionado
+    if (location.pathname === '/' && !showFavorites) {
+      filterByCollection('todos');
+    }
   }, [location.pathname]);
 
   const handleMyPiksClick = () => {

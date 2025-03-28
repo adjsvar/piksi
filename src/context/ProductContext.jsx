@@ -14,39 +14,52 @@ export function ProductProvider({ children }) {
   const [currentCollection, setCurrentCollection] = useState('todos')
   const [similarProducts, setSimilarProducts] = useState([])
   const [searchActive, setSearchActive] = useState(false)
+  const [searchQuery, setSearchQuery] = useState("")
   
   // Cache para productos relacionados para mejorar rendimiento
   const relatedProductsCache = new Map()
 
-  // Aplicar filtro inicial
+  // Aplicar filtro inicial con 'todos' seleccionado
   useEffect(() => {
     console.log("Inicializando productos...");
     setFilteredProducts([...products])
+    setCurrentCollection('todos')
   }, [])
 
   // Aplicar filtro
   const applyFilter = useCallback((collection) => {
     console.log(`Aplicando filtro: ${collection}`)
-    
-    // Si hay una búsqueda activa, no aplicamos filtro de categoría
-    if (searchActive) return
+
+    // Obtener productos filtrados por categoría
+    let categoryFiltered = []
     
     if (collection === 'todos') {
-      setFilteredProducts([...products])
+      categoryFiltered = [...products]
     } else if (collection === 'tech') {
-      setFilteredProducts(products.filter(product => product.category === 'tecnologia'))
+      categoryFiltered = products.filter(product => product.category === 'tecnologia')
     } else if (collection === 'cocina') {
-      setFilteredProducts(products.filter(product => product.category === 'cocina'))
+      categoryFiltered = products.filter(product => product.category === 'cocina')
     } else if (collection === 'hogar') {
-      setFilteredProducts(products.filter(product => product.category === 'hogar'))
+      categoryFiltered = products.filter(product => product.category === 'hogar')
     } else if (collection === 'fitness') {
-      setFilteredProducts(products.filter(product => product.category === 'fitness'))
+      categoryFiltered = products.filter(product => product.category === 'fitness')
     } else if (collection === 'mascotas') {
-      setFilteredProducts(products.filter(product => product.category === 'mascotas'))
+      categoryFiltered = products.filter(product => product.category === 'mascotas')
     } else {
-      setFilteredProducts([...products])
+      categoryFiltered = [...products]
     }
-  }, [products, searchActive])
+
+    // Si hay búsqueda activa, aplicar filtro de búsqueda también
+    if (searchActive && searchQuery.trim() !== '') {
+      const lowercaseQuery = searchQuery.toLowerCase()
+      categoryFiltered = categoryFiltered.filter(product => 
+        product.title.toLowerCase().includes(lowercaseQuery) ||
+        product.category.toLowerCase().includes(lowercaseQuery)
+      )
+    }
+    
+    setFilteredProducts(categoryFiltered)
+  }, [products, searchActive, searchQuery])
 
   // Toggle product "pik" status - optimizado con useCallback
   const toggleProductPik = useCallback((productId) => {
@@ -149,7 +162,10 @@ export function ProductProvider({ children }) {
         // Mostrar favoritos
         const favorites = products.filter(product => product.piked);
         setFilteredProducts(favorites);
+        
+        // Al activar favoritos, desactivar búsqueda
         setSearchActive(false);
+        setSearchQuery("");
         
         // Generar recomendaciones si hay favoritos
         if (favorites.length > 0) {
@@ -188,7 +204,10 @@ export function ProductProvider({ children }) {
       // Mostrar favoritos
       const favorites = products.filter(product => product.piked);
       setFilteredProducts(favorites);
+      
+      // Al activar favoritos, desactivar búsqueda
       setSearchActive(false);
+      setSearchQuery("");
     } else {
       // Mostrar productos normales según colección
       applyFilter(currentCollection);
@@ -200,33 +219,38 @@ export function ProductProvider({ children }) {
   const filterByCollection = useCallback((collection) => {
     console.log("filterByCollection llamado con:", collection);
     
-    // Actualizar colección actual
+    // Actualizar colección actual siempre
     setCurrentCollection(collection);
     
-    // Desactivar modo de búsqueda si estaba activo
-    setSearchActive(false);
-    
-    // Si estamos mostrando favoritos, no cambiar el filtro
+    // Si estamos en favoritos y cambiamos categoría, desactivar favoritos
     if (showFavorites) {
-      return;
+      setShowFavorites(false);
     }
     
     // Limpiar caché de productos relacionados al cambiar colección
     relatedProductsCache.clear();
     
-    // Aplicar filtro
+    // Aplicar filtro manteniendo el estado de búsqueda
     applyFilter(collection);
   }, [showFavorites, applyFilter]);
 
   // Función para establecer productos filtrados y marcar búsqueda como activa
-  const setFilteredProductsAndSearch = useCallback((filtered) => {
+  const setFilteredProductsAndSearch = useCallback((filtered, query = "") => {
     setFilteredProducts(filtered);
     setSearchActive(filtered.length !== products.length);
-  }, [products.length]);
+    setSearchQuery(query);
+    
+    // Reaplica el filtro de categoría si hay búsqueda activa
+    if (query.trim() !== '') {
+      applyFilter(currentCollection);
+    }
+  }, [products.length, currentCollection, applyFilter]);
 
   // Función para resetear búsqueda
   const resetSearch = useCallback(() => {
     setSearchActive(false);
+    setSearchQuery("");
+    
     if (showFavorites) {
       // Si estamos en favoritos, mostrar favoritos
       const favorites = products.filter(product => product.piked);
@@ -244,6 +268,7 @@ export function ProductProvider({ children }) {
     showFavorites,
     currentCollection,
     searchActive,
+    searchQuery,
     toggleProductPik,
     filterByCollection,
     getRelatedProducts,
