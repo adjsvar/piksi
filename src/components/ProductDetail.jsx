@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { useParams, Link, useNavigate } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 import { useProducts } from '../context/ProductContext'
 import SimilarProductCard from './SimilarProductCard'
 import { categoryColors } from '../data/products'
@@ -15,6 +15,7 @@ const ProductDetail = ({ showNotification }) => {
   const [currentPage, setCurrentPage] = useState(1)
   const [cycleCount, setCycleCount] = useState(0)
   const [videoLoaded, setVideoLoaded] = useState(false)
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768)
   
   // Ref para el contenedor del iframe
   const iframeContainerRef = useRef(null)
@@ -22,6 +23,18 @@ const ProductDetail = ({ showNotification }) => {
   
   // Usamos el mismo ID de video para todos los productos
   const videoId = "6vavVtGDCvA"
+  
+  // Detector de tamaño de pantalla
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768)
+    }
+    
+    window.addEventListener('resize', handleResize)
+    return () => {
+      window.removeEventListener('resize', handleResize)
+    }
+  }, [])
   
   // Efecto para limpiar recursos al desmontar el componente
   useEffect(() => {
@@ -165,15 +178,14 @@ const ProductDetail = ({ showNotification }) => {
     if (!iframeContainerRef.current) return
     
     try {
+      // Configuración mejorada para asegurar que el video esté centrado
       iframeContainerRef.current.innerHTML = `
         <iframe 
-          width="100%" 
-          height="100%" 
           src="https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&controls=0&showinfo=0&rel=0&loop=1&playlist=${videoId}&modestbranding=1&fs=0&disablekb=1&iv_load_policy=3&color=white" 
           frameborder="0" 
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
           allowfullscreen
-          style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"
+          style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain;"
         ></iframe>
       `
       
@@ -224,6 +236,21 @@ const ProductDetail = ({ showNotification }) => {
                   />
                 </>
               )}
+              
+              {/* CTA flotante para móvil */}
+              <div className="mobile-floating-cta">
+                <a 
+                  href={`https://amazon.es/dp/${product.asin}?tag=affiliatetag-21`} 
+                  className="mobile-cta-button" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                >
+                  Ver oferta en Amazon
+                </a>
+                <div className="mobile-mini-disclaimer">
+                  Pequeña comisión para nosotros si compras. ¡Sin coste adicional para ti!
+                </div>
+              </div>
             </div>
           </div>
 

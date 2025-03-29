@@ -10,7 +10,7 @@
 .product-detail-main {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 1rem;
   margin-bottom: 2rem;
   align-items: center;
 }
@@ -18,22 +18,8 @@
 @media (min-width: 768px) {
   .product-detail-main {
     flex-direction: row;
-    align-items: flex-start;
+    align-items: stretch;
     justify-content: center;
-    max-width: 950px;
-    margin: 0 auto;
-    gap: 1rem;
-  }
-  
-  .product-detail-header {
-    max-width: 450px;
-    margin: 0;
-  }
-  
-  .product-detail-info {
-    max-width: 450px;
-    margin: 0;
-    height: auto;
   }
 }
 
@@ -71,7 +57,7 @@
   left: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain; /* Mantener contain para evitar recortes */
   opacity: 0.8;
   transition: opacity 0.3s ease;
 }
@@ -109,6 +95,58 @@
   overflow: hidden;
 }
 
+.iframe-container iframe {
+  width: 100%;
+  height: 100%;
+  object-fit: contain; /* Asegura que el video no se recorte */
+}
+
+/* Estilos mejorados para el CTA flotante en móvil */
+.mobile-floating-cta {
+  display: none;
+  position: absolute;
+  bottom: 20px; /* Cambiado de top a bottom */
+  left: 50%;
+  transform: translateX(-50%);
+  width: auto;
+  z-index: 20;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Botón aquamarina sin subrayado */
+.mobile-cta-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 24px;
+  background-color: rgba(74, 198, 183, 0.9);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  text-decoration: none;
+  backdrop-filter: blur(4px);
+  min-width: 180px;
+  max-width: 220px;
+}
+
+.mobile-mini-disclaimer {
+  background-color: rgba(255, 255, 255, 0.7);
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  color: #555;
+  text-align: center;
+  backdrop-filter: blur(4px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  max-width: 240px;
+}
+
 .product-detail-info {
   background-color: white;
   border-radius: 10px;
@@ -127,9 +165,6 @@
 @media (min-width: 768px) {
   .product-detail-info {
     height: auto;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
   }
 }
 
@@ -224,7 +259,6 @@
   width: 100%;
 }
 
-/* Destacar el disclaimer de afiliados */
 .affiliate-disclaimer {
   margin-top: 1.5rem;
   padding: 1rem;
@@ -248,39 +282,66 @@
 /* Media queries */
 @media (max-width: 767px) {
   .product-detail-content {
-    padding: 0 1rem;
-    margin-top: 1rem;
+    padding: 0;
+    margin-top: 0;
   }
   
   .product-detail-main {
-    gap: 1rem;
+    gap: 0;
   }
   
+  .product-detail-header {
+    max-width: none; /* Asegura que tome el ancho completo */
+    width: 100%;
+    border-radius: 0; /* Sin bordes en móvil - pantalla completa */
+    margin-bottom: 1rem;
+    height: auto; /* Altura auto para mantener proporción */
+  }
+  
+  .product-detail-video-container {
+    border-radius: 0; /* Sin bordes en móvil */
+    width: 100%;
+    height: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .iframe-container {
+    border-radius: 0; /* Sin bordes en móvil */
+    position: relative;
+  }
+  
+  .mobile-floating-cta {
+    display: flex;
+  }
+
+  .product-detail-info {
+    max-width: 100%;
+    border-radius: 20px 20px 0 0;
+    margin-top: -20px;
+    padding-top: 2rem;
+    aspect-ratio: auto;
+    height: auto;
+  }
+
   .product-detail-action-buttons {
-    flex-direction: column;
+    display: none; /* Ocultamos el botón en la info ya que tenemos el flotante */
+  }
+
+  .affiliate-disclaimer {
+    margin-top: 0.5rem;
   }
   
   .similar-products-container {
     grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
     grid-gap: 0.75rem;
-  }
-}
-
-@media (max-width: 640px) {
-  .product-detail-price-container {
-    flex-direction: column;
-    align-items: flex-start;
+    padding: 0 1rem;
   }
   
   .similar-products-title {
     font-size: 1.25rem;
-    margin: 2rem 0 1rem;
-  }
-}
-
-@media (min-width: 1280px) {
-  .similar-products-container {
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-    grid-gap: 1.25rem;
+    margin: 1.5rem 0 1rem;
+    padding: 0 1rem;
   }
 }
