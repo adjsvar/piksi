@@ -8,6 +8,8 @@ const MobileNavbar = () => {
   const { showFavorites, toggleShowFavorites, filterByCollection } = useProducts()
   const navigate = useNavigate()
   const [showCategories, setShowCategories] = useState(false)
+  const [showSearch, setShowSearch] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
 
   const handleHomeClick = () => {
     if (showFavorites) {
@@ -26,6 +28,14 @@ const MobileNavbar = () => {
 
   const toggleCategories = () => {
     setShowCategories(!showCategories)
+    // Si está abierta la búsqueda, cerrarla
+    if (showSearch) setShowSearch(false)
+  }
+  
+  const toggleSearch = () => {
+    setShowSearch(!showSearch)
+    // Si están abiertas las categorías, cerrarlas
+    if (showCategories) setShowCategories(false)
   }
 
   const handleCategoryClick = (categoryId) => {
@@ -35,6 +45,13 @@ const MobileNavbar = () => {
     filterByCollection(categoryId)
     setShowCategories(false)
     navigate('/')
+  }
+  
+  const handleSearch = (e) => {
+    e.preventDefault()
+    // Aquí implementar la lógica de búsqueda
+    // Por ahora solo cerramos el campo
+    setShowSearch(false)
   }
 
   const categories = [
@@ -68,6 +85,14 @@ const MobileNavbar = () => {
           <span>Categorías</span>
         </div>
         
+        <div className="mobile-nav-item" onClick={toggleSearch}>
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <span>Buscar</span>
+        </div>
+        
         <div className="mobile-nav-item" onClick={handlePiksClick}>
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill={showFavorites ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
@@ -89,6 +114,27 @@ const MobileNavbar = () => {
               </div>
             ))}
           </div>
+        </div>
+      )}
+      
+      {showSearch && (
+        <div className="search-dropdown">
+          <form className="search-dropdown-form" onSubmit={handleSearch}>
+            <input 
+              type="text"
+              placeholder="Buscar productos"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="search-dropdown-input"
+              autoFocus
+            />
+            <button type="submit" className="search-dropdown-button">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+            </button>
+          </form>
         </div>
       )}
     </>

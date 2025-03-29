@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { useProducts } from '../context/ProductContext'
+import { categoryColors } from '../data/products'
 import '../styles/ProductCard.css'
 
 const ProductCard = ({ product, showNotification }) => {
@@ -30,6 +31,17 @@ const ProductCard = ({ product, showNotification }) => {
     }
     return text
   }
+  
+  // Transformar nombre de categoría para mostrar
+  const getCategoryName = (category) => {
+    if (category === 'tecnologia') return 'Tech';
+    if (category === 'hogar') return 'Hogar';
+    if (category === 'cocina') return 'Cocina';
+    if (category === 'fitness') return 'Fitness';
+    if (category === 'mascotas') return 'Mascotas';
+    if (category === 'viajes') return 'Viajes';
+    return category.charAt(0).toUpperCase() + category.slice(1);
+  }
 
   return (
     <div className="product-card-wrapper">
@@ -42,15 +54,25 @@ const ProductCard = ({ product, showNotification }) => {
                 className="product-thumbnail" 
                 alt={product.title} 
               />
-              /* Eliminado el icono de reproducción */
             )}
           </div>
           
-          {product.trending && (
-            <div className="trending-badge">
-              Trending
+          <div className="product-badges">
+            {product.trending && (
+              <div className="product-badge trending-badge">
+                Trending
+              </div>
+            )}
+            <div 
+              className="product-badge category-badge"
+              style={{ 
+                backgroundColor: `${categoryColors[product.category]}20`, 
+                color: categoryColors[product.category] 
+              }}
+            >
+              {getCategoryName(product.category)}
             </div>
-          )}
+          </div>
           
           <div className="pik-button-container">
             <button 

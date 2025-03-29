@@ -10,42 +10,58 @@ const Navbar = () => {
     filterByCollection, 
     currentCollection, 
     resetSearch,
-    setShowFavorites 
+    setShowFavorites,
+    setFilteredProducts,
+    products
   } = useProducts()
   
   const navigate = useNavigate()
   const location = useLocation()
   const [showCategories, setShowCategories] = useState(false)
+  const [showMobileSearch, setShowMobileSearch] = useState(false)
+  const [mobileSearchQuery, setMobileSearchQuery] = useState("")
 
   // Cerrar menú de categorías cuando se cambia de página
-  // y marcar 'todos' como activo al iniciar
   useEffect(() => {
     setShowCategories(false);
-    
-    // Al cargar la aplicación, asegurarse que 'todos' esté seleccionado
-    if (location.pathname === '/' && !showFavorites) {
-      filterByCollection('todos');
-    }
+    setShowMobileSearch(false);
   }, [location.pathname]);
 
   const handleMyPiksClick = () => {
+    // Cerrar cualquier menú abierto
+    setShowCategories(false);
+    setShowMobileSearch(false);
+    
     toggleShowFavorites()
     navigate('/')
   }
 
   const handleLogoClick = (e) => {
     e.preventDefault()
+    
+    // Cerrar cualquier menú abierto
+    setShowCategories(false);
+    setShowMobileSearch(false);
+    
+    // Si no estamos en la página principal, navegar a ella
+    if (location.pathname !== '/') {
+      navigate('/')
+    }
+    
     // Desactivar favoritos si están activos
     if (showFavorites) {
       setShowFavorites(false)
     }
+    
+    // Aplicar filtro a todos los productos
     filterByCollection('todos')
     resetSearch()
-    navigate('/')
   }
 
   const categories = [
-    { id: 'todos', name: 'Inicio', icon: 'home' },
+    { id: 'todos', name: 'Todos', icon: 'home' },
+    { id: 'trending', name: 'Trending', icon: 'trending-up' },
+    { id: 'para-ti', name: 'Para ti', icon: 'user' },
     { id: 'tech', name: 'Tech', icon: 'smartphone' },
     { id: 'cocina', name: 'Cocina', icon: 'utensils' },
     { id: 'hogar', name: 'Hogar', icon: 'couch' },
@@ -56,17 +72,13 @@ const Navbar = () => {
   const handleCategoryClick = (categoryId) => {
     console.log("Clic en categoría:", categoryId)
     
-    // Si estamos en favoritos, desactivarlos
-    if (showFavorites) {
-      setShowFavorites(false)
+    // Primero navegar a la página principal si no estamos en ella
+    if (location.pathname !== '/') {
+      navigate('/')
     }
     
-    // Aplicar filtro de categoría
+    // Aplicar filtro de categoría - solo una llamada
     filterByCollection(categoryId)
-    resetSearch()
-    
-    // Navegar a la página principal
-    navigate('/')
     
     // Cerrar el menú de categorías en móvil
     setShowCategories(false)
@@ -74,14 +86,58 @@ const Navbar = () => {
 
   const toggleCategories = () => {
     setShowCategories(prevState => !prevState)
+    // Cerrar búsqueda si está abierta
+    if (showMobileSearch) setShowMobileSearch(false)
+  }
+
+  const toggleMobileSearch = () => {
+    setShowMobileSearch(prevState => !prevState)
+    // Cerrar categorías si están abiertas
+    if (showCategories) setShowCategories(false)
   }
 
   const handleHomeClick = () => {
-    if (showFavorites) {
-      toggleShowFavorites()
+    // Cerrar cualquier menú abierto
+    setShowCategories(false);
+    setShowMobileSearch(false);
+    
+    // Si no estamos en la página principal, navegar a ella
+    if (location.pathname !== '/') {
+      navigate('/')
     }
+    
+    // Aplicar filtro a todos los productos
     filterByCollection('todos')
-    navigate('/')
+  }
+  
+  const handleMobileSearch = (e) => {
+    e.preventDefault()
+    
+    // Primero navegar a la página principal
+    if (location.pathname !== '/') {
+      navigate('/')
+    }
+    
+    // Implementar búsqueda
+    if (mobileSearchQuery.trim() !== '') {
+      // Filtrar productos según término de búsqueda
+      const lowercaseQuery = mobileSearchQuery.toLowerCase()
+      
+      // Filtrar productos basados en la consulta
+      const filtered = products.filter(product => 
+        product.title.toLowerCase().includes(lowercaseQuery) ||
+        product.category.toLowerCase().includes(lowercaseQuery)
+      )
+      
+      // Pasar los productos filtrados
+      setFilteredProducts(filtered, mobileSearchQuery)
+    } else {
+      // Si el campo está vacío, mostrar todos los productos
+      resetSearch()
+    }
+    
+    // Cerrar el campo de búsqueda
+    setShowMobileSearch(false)
   }
 
   return (
@@ -105,6 +161,18 @@ const Navbar = () => {
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
                       <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                    </svg>
+                  )}
+                  {category.icon === 'trending-up' && (
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+                      <polyline points="17 6 23 6 23 12"></polyline>
+                    </svg>
+                  )}
+                  {category.icon === 'user' && (
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                      <circle cx="12" cy="7" r="4"></circle>
                     </svg>
                   )}
                   {category.icon === 'smartphone' && (
@@ -199,6 +267,14 @@ const Navbar = () => {
           <span>Categorías</span>
         </div>
         
+        <div className="mobile-nav-item" onClick={toggleMobileSearch}>
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <span>Buscar</span>
+        </div>
+        
         <div className="mobile-nav-item" onClick={handleMyPiksClick}>
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill={showFavorites ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
@@ -207,27 +283,49 @@ const Navbar = () => {
         </div>
         
         <Link to="/profile" className={`mobile-nav-item ${location.pathname === '/profile' ? 'active' : ''}`}>
-          <div className="profile-pic" style={{ width: '24px', height: '24px', marginBottom: '4px' }}>
+          <div className="profile-pic-small">
             <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="Profile" />
           </div>
           <span>Perfil</span>
         </Link>
       </nav>
 
-      {/* Dropdown de categorías para móvil - Ahora desde abajo con wrap */}
+      {/* Dropdown de categorías para móvil */}
       {showCategories && (
         <div className="categories-dropdown">
-          <div className="categories-list">
+          <div className="categories-list-mobile">
             {categories.map(category => (
               <div 
                 key={category.id} 
-                className="category-dropdown-item" 
+                className={`category-dropdown-item ${currentCollection === category.id ? 'active' : ''}`}
                 onClick={() => handleCategoryClick(category.id)}
               >
                 {category.name}
               </div>
             ))}
           </div>
+        </div>
+      )}
+      
+      {/* Campo de búsqueda móvil */}
+      {showMobileSearch && (
+        <div className="search-dropdown">
+          <form onSubmit={handleMobileSearch} className="search-dropdown-form">
+            <input
+              type="text"
+              placeholder="Buscar productos"
+              value={mobileSearchQuery}
+              onChange={(e) => setMobileSearchQuery(e.target.value)}
+              className="search-dropdown-input"
+              autoFocus
+            />
+            <button type="submit" className="search-dropdown-button">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+            </button>
+          </form>
         </div>
       )}
     </>

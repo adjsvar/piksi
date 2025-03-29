@@ -1,4 +1,4 @@
-import { createContext, useState, useContext, useCallback, useEffect, useMemo } from 'react'
+import { createContext, useState, useContext, useCallback } from 'react'
 import productsData from '../data/products'
 
 const ProductContext = createContext()
@@ -8,6 +8,7 @@ export function useProducts() {
 }
 
 export function ProductProvider({ children }) {
+  // Estado principal
   const [products, setProducts] = useState(productsData)
   const [filteredProducts, setFilteredProducts] = useState([...productsData])
   const [showFavorites, setShowFavorites] = useState(false)
@@ -19,50 +20,64 @@ export function ProductProvider({ children }) {
   // Cache para productos relacionados para mejorar rendimiento
   const relatedProductsCache = new Map()
 
-  // Aplicar filtro inicial con 'todos' seleccionado
-  useEffect(() => {
-    console.log("Inicializando productos...");
-    setFilteredProducts([...products])
-    setCurrentCollection('todos')
-  }, [])
-
-  // Aplicar filtro
-  const applyFilter = useCallback((collection) => {
-    console.log(`Aplicando filtro: ${collection}`)
-
-    // Obtener productos filtrados por categoría
-    let categoryFiltered = []
+  /**
+   * Filtra los productos según la categoría o colección
+   * Esta es la ÚNICA función que debe modificar filteredProducts basado en colección
+   */
+  const filterByCollection = useCallback((collection) => {
+    console.log("filterByCollection llamado con:", collection)
     
-    if (collection === 'todos') {
-      categoryFiltered = [...products]
-    } else if (collection === 'tech') {
-      categoryFiltered = products.filter(product => product.category === 'tecnologia')
-    } else if (collection === 'cocina') {
-      categoryFiltered = products.filter(product => product.category === 'cocina')
-    } else if (collection === 'hogar') {
-      categoryFiltered = products.filter(product => product.category === 'hogar')
-    } else if (collection === 'fitness') {
-      categoryFiltered = products.filter(product => product.category === 'fitness')
-    } else if (collection === 'mascotas') {
-      categoryFiltered = products.filter(product => product.category === 'mascotas')
-    } else {
-      categoryFiltered = [...products]
+    // Actualizar colección actual
+    setCurrentCollection(collection)
+    
+    // Limpiar caché de productos relacionados al cambiar colección
+    relatedProductsCache.clear()
+
+    // Desactivar favoritos si estaban activos
+    if (showFavorites) {
+      setShowFavorites(false)
     }
 
-    // Si hay búsqueda activa, aplicar filtro de búsqueda también
+    // Filtrar productos según la colección
+    let filteredResults = []
+    
+    if (collection === 'todos') {
+      filteredResults = [...products]
+    } else if (collection === 'trending') {
+      filteredResults = products.filter(product => product.trending === true)
+    } else if (collection === 'para-ti') {
+      // Para ti - productos con rating alto
+      filteredResults = products.filter(product => product.rating >= 4.6)
+    } else if (collection === 'tech') {
+      filteredResults = products.filter(product => product.category === 'tecnologia')
+    } else if (collection === 'cocina') {
+      filteredResults = products.filter(product => product.category === 'cocina')
+    } else if (collection === 'hogar') {
+      filteredResults = products.filter(product => product.category === 'hogar')
+    } else if (collection === 'fitness') {
+      filteredResults = products.filter(product => product.category === 'fitness')
+    } else if (collection === 'mascotas') {
+      filteredResults = products.filter(product => product.category === 'mascotas')
+    } else {
+      filteredResults = [...products]
+    }
+
+    // Aplicar filtro de búsqueda si está activo
     if (searchActive && searchQuery.trim() !== '') {
       const lowercaseQuery = searchQuery.toLowerCase()
-      categoryFiltered = categoryFiltered.filter(product => 
+      filteredResults = filteredResults.filter(product => 
         product.title.toLowerCase().includes(lowercaseQuery) ||
         product.category.toLowerCase().includes(lowercaseQuery)
       )
     }
     
-    setFilteredProducts(categoryFiltered)
-  }, [products, searchActive, searchQuery])
+    // Actualizar productos filtrados
+    setFilteredProducts(filteredResults)
+  }, [products, searchActive, searchQuery, showFavorites])
 
-  // Toggle product "pik" status - optimizado con useCallback
+  // Toggle product "pik" status (favorito)
   const toggleProductPik = useCallback((productId) => {
+    // Actualizar el estado de "piked" en todos los productos
     setProducts(prevProducts => {
       return prevProducts.map(product => {
         if (product.id === productId) {
@@ -72,6 +87,7 @@ export function ProductProvider({ children }) {
       })
     })
 
+    // Actualizar también en los productos filtrados
     setFilteredProducts(prevProducts => {
       return prevProducts.map(product => {
         if (product.id === productId) {
@@ -82,7 +98,7 @@ export function ProductProvider({ children }) {
     })
   }, [])
 
-  // Get related products - optimizado con useCallback y caché
+  // Obtener productos relacionados
   const getRelatedProducts = useCallback((productId, count = 4) => {
     // Revisamos si tenemos resultados en caché
     const cacheKey = `${productId}-${count}`
@@ -132,21 +148,6 @@ export function ProductProvider({ children }) {
       result = [...result, ...randomOthers]
     }
     
-    // Completamos con duplicados si es necesario pero con IDs diferentes
-    if (result.length < safeCount) {
-      const neededDuplicates = safeCount - result.length
-      
-      // Creamos copias con IDs modificados
-      for (let i = 0; i < neededDuplicates; i++) {
-        const originalIndex = i % products.length
-        const duplicate = {
-          ...products[originalIndex],
-          id: products[originalIndex].id + 1000 + i
-        }
-        result.push(duplicate)
-      }
-    }
-    
     // Guardamos en caché
     relatedProductsCache.set(cacheKey, result)
     
@@ -156,110 +157,107 @@ export function ProductProvider({ children }) {
   // Toggle mostrar favoritos
   const toggleShowFavorites = useCallback(() => {
     setShowFavorites(prev => {
-      const newValue = !prev;
+      const newValue = !prev
       
       if (newValue) {
         // Mostrar favoritos
-        const favorites = products.filter(product => product.piked);
-        setFilteredProducts(favorites);
+        const favorites = products.filter(product => product.piked)
+        setFilteredProducts(favorites)
         
         // Al activar favoritos, desactivar búsqueda
-        setSearchActive(false);
-        setSearchQuery("");
+        setSearchActive(false)
+        setSearchQuery("")
         
         // Generar recomendaciones si hay favoritos
         if (favorites.length > 0) {
-          const allSimilar = [];
+          const allSimilar = []
           favorites.forEach(fav => {
-            const similar = getRelatedProducts(fav.id, 4);
-            allSimilar.push(...similar);
-          });
+            const similar = getRelatedProducts(fav.id, 4)
+            allSimilar.push(...similar)
+          })
           
           // Eliminar duplicados y favoritos
           const uniqueSimilar = allSimilar.filter((product, index, self) => {
-            const uniqueIndex = self.findIndex(p => p.id === product.id);
-            const isFavorite = favorites.some(fav => fav.id === product.id);
-            return index === uniqueIndex && !isFavorite;
-          });
+            const uniqueIndex = self.findIndex(p => p.id === product.id)
+            const isFavorite = favorites.some(fav => fav.id === product.id)
+            return index === uniqueIndex && !isFavorite
+          })
           
-          setSimilarProducts(uniqueSimilar.slice(0, 12));
+          setSimilarProducts(uniqueSimilar.slice(0, 12))
         } else {
-          setSimilarProducts([]);
+          setSimilarProducts([])
         }
       } else {
         // Mostrar productos normales según colección
-        applyFilter(currentCollection);
-        setSimilarProducts([]);
+        let filteredResults = []
+        
+        if (currentCollection === 'todos') {
+          filteredResults = [...products]
+        } else if (currentCollection === 'trending') {
+          filteredResults = products.filter(product => product.trending === true)
+        } else if (currentCollection === 'para-ti') {
+          filteredResults = products.filter(product => product.rating >= 4.6)
+        } else if (currentCollection === 'tech') {
+          filteredResults = products.filter(product => product.category === 'tecnologia')
+        } else if (currentCollection === 'cocina') {
+          filteredResults = products.filter(product => product.category === 'cocina')
+        } else if (currentCollection === 'hogar') {
+          filteredResults = products.filter(product => product.category === 'hogar')
+        } else if (currentCollection === 'fitness') {
+          filteredResults = products.filter(product => product.category === 'fitness')
+        } else if (currentCollection === 'mascotas') {
+          filteredResults = products.filter(product => product.category === 'mascotas')
+        } else {
+          filteredResults = [...products]
+        }
+        
+        setFilteredProducts(filteredResults)
+        setSimilarProducts([])
       }
       
-      return newValue;
-    });
-  }, [currentCollection, products, getRelatedProducts, applyFilter]);
+      return newValue
+    })
+  }, [currentCollection, products, getRelatedProducts])
 
-  // Establecer showFavorites directamente con manejo de estado
+  // Establecer showFavorites directamente
   const setShowFavoritesWithState = useCallback((value) => {
-    setShowFavorites(value);
+    setShowFavorites(value)
     
     if (value) {
       // Mostrar favoritos
-      const favorites = products.filter(product => product.piked);
-      setFilteredProducts(favorites);
+      const favorites = products.filter(product => product.piked)
+      setFilteredProducts(favorites)
       
       // Al activar favoritos, desactivar búsqueda
-      setSearchActive(false);
-      setSearchQuery("");
+      setSearchActive(false)
+      setSearchQuery("")
     } else {
-      // Mostrar productos normales según colección
-      applyFilter(currentCollection);
-      setSimilarProducts([]);
+      // Mostrar productos normales según la colección actual
+      filterByCollection(currentCollection)
     }
-  }, [products, currentCollection, applyFilter]);
+  }, [products, currentCollection, filterByCollection])
 
-  // Filter products by collection - optimizado con useCallback
-  const filterByCollection = useCallback((collection) => {
-    console.log("filterByCollection llamado con:", collection);
-    
-    // Actualizar colección actual siempre
-    setCurrentCollection(collection);
-    
-    // Si estamos en favoritos y cambiamos categoría, desactivar favoritos
-    if (showFavorites) {
-      setShowFavorites(false);
-    }
-    
-    // Limpiar caché de productos relacionados al cambiar colección
-    relatedProductsCache.clear();
-    
-    // Aplicar filtro manteniendo el estado de búsqueda
-    applyFilter(collection);
-  }, [showFavorites, applyFilter]);
-
-  // Función para establecer productos filtrados y marcar búsqueda como activa
+  // Función para establecer productos filtrados por búsqueda
   const setFilteredProductsAndSearch = useCallback((filtered, query = "") => {
-    setFilteredProducts(filtered);
-    setSearchActive(filtered.length !== products.length);
-    setSearchQuery(query);
-    
-    // Reaplica el filtro de categoría si hay búsqueda activa
-    if (query.trim() !== '') {
-      applyFilter(currentCollection);
-    }
-  }, [products.length, currentCollection, applyFilter]);
+    setFilteredProducts(filtered)
+    setSearchActive(filtered.length !== products.length)
+    setSearchQuery(query)
+  }, [products.length])
 
   // Función para resetear búsqueda
   const resetSearch = useCallback(() => {
-    setSearchActive(false);
-    setSearchQuery("");
+    setSearchActive(false)
+    setSearchQuery("")
     
     if (showFavorites) {
       // Si estamos en favoritos, mostrar favoritos
-      const favorites = products.filter(product => product.piked);
-      setFilteredProducts(favorites);
+      const favorites = products.filter(product => product.piked)
+      setFilteredProducts(favorites)
     } else {
-      // Si no, mostrar productos según categoría
-      applyFilter(currentCollection);
+      // Si no, mostrar productos según la colección actual
+      filterByCollection(currentCollection)
     }
-  }, [currentCollection, applyFilter, products, showFavorites]);
+  }, [currentCollection, filterByCollection, products, showFavorites])
 
   const value = {
     products,

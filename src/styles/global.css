@@ -19,6 +19,19 @@ body {
   overflow-x: hidden;
 }
 
+/* Clase para controlar el comportamiento durante el redimensionamiento */
+.resize-in-progress * {
+  transition: none !important;
+}
+
+.resize-in-progress .product-image {
+  aspect-ratio: 9/16 !important;
+}
+
+.resize-in-progress .product-detail-video-container {
+  aspect-ratio: 9/16 !important;
+}
+
 /* Estructura principal */
 .piksi-app {
   display: flex;

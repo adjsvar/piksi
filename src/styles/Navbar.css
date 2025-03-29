@@ -204,36 +204,59 @@
   font-weight: 400;
 }
 
-/* Centro el icono de perfil */
-.mobile-nav-item .profile-pic {
-  margin: 0 auto 4px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+/* Icono de perfil en el menú móvil */
+.profile-pic-small {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  overflow: hidden;
+  margin-bottom: 4px;
 }
 
-/* Dropdown de categorías */
-.categories-dropdown {
+.profile-pic-small img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Dropdown compartido para categorías y búsqueda - AHORA PARALELOS AL NAVBAR */
+.categories-dropdown,
+.search-dropdown {
   position: fixed;
-  bottom: 56px; /* Posición justo encima del navbar móvil */
+  bottom: 0;
   left: 0;
-  width: 100%; /* Usar todo el ancho disponible */
+  right: 0;
   background-color: white;
   box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.1);
-  z-index: 990;
-  border-top: 1px solid rgba(0, 0, 0, 0.05);
-  padding: 8px;
+  z-index: 980; /* Un poco menos que el navbar para que esté detrás */
+  padding-bottom: 56px; /* Espacio exacto para el navbar */
+  animation: slideIn 0.2s ease forwards;
 }
 
-.categories-dropdown .categories-list {
+@keyframes slideIn {
+  from { 
+    transform: translateY(10px);
+    opacity: 0;
+  }
+  to { 
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Estilos para el dropdown de categorías */
+.categories-dropdown {
+  padding: 12px 12px 68px 12px;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.categories-list-mobile {
   display: flex;
   flex-direction: row;
-  flex-wrap: wrap; /* Permitir múltiples líneas */
+  flex-wrap: wrap;
   gap: 8px;
   width: 100%;
-  justify-content: flex-start;
-  align-items: center;
-  padding: 0;
+  justify-content: center;
 }
 
 .category-dropdown-item {
@@ -246,11 +269,52 @@
   color: #333;
   cursor: pointer;
   margin-bottom: 6px;
-  flex: 0 1 auto; /* No crecer, pero permitir encogerse */
+  flex: 0 1 auto;
+  transition: all 0.2s ease;
+}
+
+.category-dropdown-item.active {
+  background-color: #4ac6b7;
+  color: white;
 }
 
 .category-dropdown-item:active {
   background-color: #e5e5e5;
+  transform: scale(0.98);
+}
+
+/* Estilos para el dropdown de búsqueda */
+.search-dropdown {
+  padding: 10px 16px 66px 16px;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.search-dropdown-form {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.search-dropdown-input {
+  flex: 1;
+  padding: 10px 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 999px;
+  font-size: 16px;
+  outline: none;
+}
+
+.search-dropdown-input:focus {
+  border-color: #4ac6b7;
+}
+
+.search-dropdown-button {
+  background: none;
+  border: none;
+  padding: 10px;
+  margin-left: -44px;
+  color: #4b5563;
+  cursor: pointer;
 }
 
 /* Media Queries */
@@ -270,10 +334,5 @@
     margin-left: 0;
     width: 100%;
     padding-bottom: 56px; /* Para evitar que el contenido quede detrás del navbar */
-  }
-  
-  /* Cuando el menú de categorías está visible, ajustar el padding-bottom */
-  .categories-visible .main-content {
-    padding-bottom: calc(56px + 48px); /* Altura navbar + aproximado altura categorías */
   }
 }

@@ -81,19 +81,34 @@
   background-color: rgba(0, 0, 0, 0.1); /* Usar negro semitransparente para oscurecer */
 }
 
-.trending-badge {
+/* Contenedor y estilos de badges */
+.product-badges {
   position: absolute;
   top: 0.5rem;
   left: 0.5rem;
-  background-color: rgba(147, 112, 219, 0.9);
-  color: white;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  z-index: 10;
+}
+
+.product-badge {
   font-size: 0.65rem;
   font-weight: 600;
   letter-spacing: 0.02em;
   padding: 0.15rem 0.5rem;
   border-radius: 9999px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  z-index: 10;
+  white-space: nowrap;
+}
+
+.trending-badge {
+  background-color: rgba(147, 112, 219, 0.9);
+  color: white;
+}
+
+.category-badge {
+  /* Los colores se aplicarán dinámicamente en el componente */
 }
 
 .pik-button-container {
