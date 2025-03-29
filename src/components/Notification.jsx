@@ -38,7 +38,7 @@ const Notification = ({ product, boardName, onClose }) => {
         </svg>
       </div>
       <div className="notification-content">
-        <p className="notification-title">¡Guardado en {boardName}!</p>
+        <p className="notification-title">Piksi guardado</p>
         <p className="notification-subtitle">{product.title}</p>
       </div>
       <div className="notification-close" onClick={handleClose}>
