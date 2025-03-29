@@ -250,6 +250,7 @@
   padding-bottom: 0.75rem;
   border-bottom: 3px solid #e5e7eb;
   text-transform: uppercase;
+  border-radius: 12px 12px 0 0;
 }
 
 .similar-products-container {
@@ -257,6 +258,8 @@
   grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
   grid-gap: 1rem;
   width: 100%;
+  border-radius: 12px;
+  overflow: hidden;
 }
 
 .affiliate-disclaimer {
@@ -347,5 +350,14 @@
     font-size: 1.25rem;
     margin: 1.5rem 0 1rem;
     padding: 0 1rem;
+    background-color: white;
+    border-radius: 12px 12px 0 0;
+  }
+  
+  .similar-products-container {
+    background-color: white;
+    border-radius: 0 0 12px 12px;
+    padding-bottom: 1rem;
+    margin-bottom: 1.5rem;
   }
 }
