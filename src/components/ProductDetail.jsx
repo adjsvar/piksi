@@ -178,16 +178,42 @@ const ProductDetail = ({ showNotification }) => {
     if (!iframeContainerRef.current) return
     
     try {
-      // Configuración mejorada para asegurar que el video esté centrado
+      // Configuración mejorada para asegurar que el video esté centrado y ocultar los controles de YouTube
       iframeContainerRef.current.innerHTML = `
         <iframe 
-          src="https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&controls=0&showinfo=0&rel=0&loop=1&playlist=${videoId}&modestbranding=1&fs=0&disablekb=1&iv_load_policy=3&color=white" 
+          src="https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&controls=0&showinfo=0&rel=0&loop=1&playlist=${videoId}&modestbranding=1&fs=0&disablekb=1&iv_load_policy=3&color=white&playsinline=1&enablejsapi=1" 
           frameborder="0" 
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
           allowfullscreen
           style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain;"
         ></iframe>
       `
+      
+      // Añadir script para controlar mejor el iframe
+      const script = document.createElement('script');
+      script.innerHTML = `
+        var player;
+        function onYouTubeIframeAPIReady() {
+          player = new YT.Player('iframeContainer iframe', {
+            events: {
+              'onStateChange': function(event) {
+                // Evitar que se muestren controles cuando se pausa
+                if (event.data === YT.PlayerState.PAUSED) {
+                  player.playVideo();
+                }
+              }
+            }
+          });
+        }
+
+        // Prevenir clics en el iframe que mostrarían controles
+        document.getElementById('iframeContainer').addEventListener('click', function(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          return false;
+        });
+      `;
+      document.body.appendChild(script);
       
       // Ocultar placeholder y botón de play
       setVideoLoaded(true)
@@ -248,7 +274,7 @@ const ProductDetail = ({ showNotification }) => {
                   Ver oferta en Amazon
                 </a>
                 <div className="mobile-mini-disclaimer">
-                  Pequeña comisión para nosotros si compras. ¡Sin coste adicional para ti!
+                  Como Asociados de Amazon, obtenemos ingresos por las compras realizadas mediante los enlaces de esta página.
                 </div>
               </div>
             </div>
