@@ -137,36 +137,31 @@ const Navbar = () => {
       </div>
 
       {/* Fila de Categorías */}
-      <div 
-        style={{
-          ...styles.categoriesContainer,
-          transform: showCategories ? 'translateY(0)' : 'translateY(-100%)',
-          opacity: showCategories ? 1 : 0,
-          visibility: showCategories ? 'visible' : 'hidden'
-        }}
-      >
-        <div 
-          id="categories-scroll" 
-          ref={categoriesScrollRef} 
-          style={styles.categoriesScroll}
-        >
-          {categories.map((category, index) => (
-            <div
-              key={index}
-              style={styles.categoryItem}
-              onClick={() => handleCategoryClick(category)}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.color = '#3b82f6';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.color = styles.categoryItem.color;
-              }}
-            >
-              {category}
-            </div>
-          ))}
+      {showCategories && (
+        <div style={styles.categoriesContainer}>
+          <div 
+            id="categories-scroll" 
+            ref={categoriesScrollRef} 
+            style={styles.categoriesScroll}
+          >
+            {categories.map((category, index) => (
+              <div
+                key={index}
+                style={styles.categoryItem}
+                onClick={() => handleCategoryClick(category)}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.color = '#3b82f6';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.color = styles.categoryItem.color;
+                }}
+              >
+                {category}
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };
@@ -245,11 +240,7 @@ const styles = {
     width: '100%',
     backgroundColor: '#f8fafc',
     borderTop: '1px solid #e2e8f0',
-    borderBottom: '1px solid #e2e8f0',
-    transition: 'transform 0.2s ease, opacity 0.2s ease, visibility 0.2s ease',
-    position: 'absolute',
-    left: 0,
-    right: 0
+    borderBottom: '1px solid #e2e8f0'
   },
   categoriesScroll: {
     display: 'flex',
