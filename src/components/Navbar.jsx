@@ -7,7 +7,7 @@ const Navbar = () => {
   const [showCategories, setShowCategories] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
   const categoriesScrollRef = useRef(null);
-  const categoriesContainerRef = useRef(null);
+  const navbarRef = useRef(null);
   const navigate = useNavigate();
 
   // Categorías para la segunda fila
@@ -34,8 +34,8 @@ const Navbar = () => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
       
-      if (currentScrollY > lastScrollY && currentScrollY > 100) {
-        // Scrolling down
+      if (currentScrollY > lastScrollY && currentScrollY > 50) {
+        // Scrolling down - hide categories
         setShowCategories(false);
       }
       
@@ -87,15 +87,12 @@ const Navbar = () => {
     }
   };
 
-  // Manejar mouse hover para mostrar categorías
-  const handleMouseEnter = () => {
-    if (!showCategories) {
-      setShowCategories(true);
-    }
-  };
-
   return (
-    <div style={styles.navbarContainer}>
+    <div 
+      ref={navbarRef} 
+      style={styles.navbarContainer}
+      onMouseOver={() => setShowCategories(true)}
+    >
       {/* Navbar Principal */}
       <div style={styles.navbar}>
         {/* Logo */}
@@ -139,44 +136,35 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* Área detectora para mostrar categorías al hover */}
+      {/* Fila de Categorías */}
       <div 
-        style={styles.categoriesHoverDetector} 
-        onMouseEnter={handleMouseEnter}
+        style={{
+          ...styles.categoriesContainer,
+          transform: showCategories ? 'translateY(0)' : 'translateY(-100%)',
+          opacity: showCategories ? 1 : 0,
+          visibility: showCategories ? 'visible' : 'hidden'
+        }}
       >
-        {/* Fila de Categorías */}
         <div 
-          ref={categoriesContainerRef}
-          style={{
-            ...styles.categoriesContainer,
-            height: showCategories ? 'auto' : '0',
-            overflow: showCategories ? 'visible' : 'hidden',
-            padding: showCategories ? undefined : 0,
-            borderWidth: showCategories ? '1px' : '0',
-            transition: 'all 0.3s ease'
-          }}
+          id="categories-scroll" 
+          ref={categoriesScrollRef} 
+          style={styles.categoriesScroll}
         >
-          <div 
-            id="categories-scroll" 
-            ref={categoriesScrollRef} 
-            style={styles.categoriesScroll}
-          >
-            {categories.map((category, index) => (
-              <div
-                key={index}
-                style={styles.categoryItem}
-                onClick={() => handleCategoryClick(category)}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.color = '#3b82f6';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.color = styles.categoryItem.color;
-                }}
-              >
-                {category}
-              </div>
-            ))}
-          </div>
+          {categories.map((category, index) => (
+            <div
+              key={index}
+              style={styles.categoryItem}
+              onClick={() => handleCategoryClick(category)}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = '#3b82f6';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = styles.categoryItem.color;
+              }}
+            >
+              {category}
+            </div>
+          ))}
         </div>
       </div>
     </div>
@@ -253,17 +241,15 @@ const styles = {
     transition: 'background-color 0.2s',
     textDecoration: 'none'
   },
-  categoriesHoverDetector: {
-    width: '100%',
-    height: '20px',
-    position: 'relative'
-  },
   categoriesContainer: {
     width: '100%',
     backgroundColor: '#f8fafc',
     borderTop: '1px solid #e2e8f0',
     borderBottom: '1px solid #e2e8f0',
-    overflow: 'hidden'
+    transition: 'transform 0.2s ease, opacity 0.2s ease, visibility 0.2s ease',
+    position: 'absolute',
+    left: 0,
+    right: 0
   },
   categoriesScroll: {
     display: 'flex',
