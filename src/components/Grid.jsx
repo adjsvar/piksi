@@ -49,15 +49,8 @@ const Grid = () => {
       const isTabletDevice = window.innerWidth >= 768 && window.innerWidth < 1200;
       setIsMobileOrTablet(isMobileDevice || isTabletDevice);
       
-      // Ajustar GAP según tamaño de pantalla con nuevos valores
-      let newGap;
-      if (window.innerWidth >= 1200) { // Desktop
-        newGap = 1.0;
-      } else if (window.innerWidth >= 768) { // Tablet
-        newGap = 0.7;
-      } else { // Móvil
-        newGap = 0.4;
-      }
+      // Establecer gap constante según tamaño de pantalla
+      const newGap = isMobileDevice ? 0.3 : 0.5;
       setGap(newGap);
       
       // Obtener el ancho disponible
@@ -600,8 +593,7 @@ const Grid = () => {
   const styles = {
     container: {
       width: '100%',
-      padding: '0.4rem',
-      backgroundColor: '#eef2ff'
+      padding: '0.4rem'
     },
     grid: {
       display: 'grid'

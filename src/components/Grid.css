@@ -1,0 +1,10 @@
+.grid-container {
+  width: 100%;
+  padding: 0.5rem;
+}
+
+@media (max-width: 768px) {
+  .grid-container {
+    padding: 0.3rem;
+  }
+} 
