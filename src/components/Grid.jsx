@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useLayoutEffect } from 'react';
+import products from '../db/products';
 
 const Grid = () => {
   const [columnData, setColumnData] = useState([]);
@@ -10,6 +11,7 @@ const Grid = () => {
   const [hoveredCard, setHoveredCard] = useState(null);
   const [isMobileOrTablet, setIsMobileOrTablet] = useState(false);
   const [preloadedDetails, setPreloadedDetails] = useState({});
+  const [cards, setCards] = useState([]);
   
   // Constantes
   const [gap, setGap] = useState(0.5);
@@ -28,14 +30,20 @@ const Grid = () => {
   const categoryIndexRef = useRef(0);
   const nextCategoryColumnRef = useRef(0);
   const visibleRowsObserver = useRef(null);
+  const usedProductsRef = useRef(new Set()); // Mantener registro de productos ya usados como strings
+  const nextBatchRef = useRef([]);
+  const preloadObserverRef = useRef(null);
+  const preloadTriggerRef = useRef(null);
   
-  // Lista completa de categorías disponibles
-  const allCategories = [
-    "Viajes", "Recetas", "Moda", "Tecnología", "Música", 
-    "Deportes", "Gaming", "Películas", "Decoración", "Arte",
-    "Libros", "Jardín", "Fotografía", "Mascotas", "Coches",
-    "Educación", "Salud", "Belleza", "Cocina", "Naturaleza"
-  ];
+  // Lista de categorías únicas de los productos
+  const allCategories = [...new Set(products.map(product => product.category))];
+  
+  // Reiniciar productos usados cuando cambia la cantidad de productos
+  useEffect(() => {
+    // Si los productos cambian, reiniciar el Set
+    usedProductsRef.current = new Set();
+    console.log("Set de productos usados reiniciado");
+  }, [products.length]);
   
   // Ajustar layout según tamaño de pantalla
   useEffect(() => {
@@ -137,6 +145,46 @@ const Grid = () => {
     
     usedCategoriesRef.current.push(category);
     return category;
+  };
+  
+  // Función para obtener un producto no usado o cualquiera si todos han sido usados
+  const getNextProduct = () => {
+    // Si no hay productos, no podemos continuar
+    if (!products || products.length === 0) {
+      console.error("No hay productos disponibles");
+      return null;
+    }
+    
+    // Si todos los productos han sido usados, reiniciar el set
+    if (usedProductsRef.current.size >= products.length) {
+      console.log("Todos los productos han sido usados, reiniciando");
+      usedProductsRef.current = new Set();
+    }
+    
+    // Obtener los IDs de productos que aún no han sido usados
+    const unusedProducts = products.filter(product => 
+      !usedProductsRef.current.has(product.id.toString())
+    );
+    
+    let selectedProduct;
+    
+    if (unusedProducts.length > 0) {
+      // Seleccionar un producto aleatorio entre los no usados
+      const randomIndex = Math.floor(Math.random() * unusedProducts.length);
+      selectedProduct = unusedProducts[randomIndex];
+      
+      // Marcar como usado (convertir a string para asegurar consistencia)
+      usedProductsRef.current.add(selectedProduct.id.toString());
+      
+      console.log(`Producto seleccionado: ${selectedProduct.id} - ${selectedProduct.title}`);
+    } else {
+      // Esto no debería ocurrir, pero por si acaso
+      const randomIndex = Math.floor(Math.random() * products.length);
+      selectedProduct = products[randomIndex];
+      console.warn("Fallback: seleccionando producto aleatorio", selectedProduct.id);
+    }
+    
+    return selectedProduct;
   };
   
   // Generar URL de imagen
@@ -284,51 +332,57 @@ const Grid = () => {
     return scrollCounter.current % 2 === 0 ? 1 : 2;
   };
   
-  // Generar tarjetas
-  const generateCards = (cardsPerColumn, numColumns) => {
-    const totalCards = cardsPerColumn * numColumns;
+  // ENFOQUE SIMPLIFICADO: Generar cards directamente a partir de los productos
+  const generateCards = () => {
+    // Limitamos a mostrar solo los productos disponibles (sin repeticiones)
+    const maxProducts = Math.min(products.length, 70);
+    const newCards = [];
     
-    const categoryCount = getCategoryCountForBatch();
-    const normalCards = totalCards - categoryCount;
-    const largeCards = Math.floor(normalCards * 0.7);
-    const mediumCards = normalCards - largeCards;
+    console.log("Generando tarjetas. Productos disponibles:", products.length);
+    console.log("Max productos a mostrar:", maxProducts);
     
-    const allSizes = [
-      ...Array(largeCards).fill(100),
-      ...Array(mediumCards).fill(75)
-    ];
-    
-    if (categoryCount > 0) {
-      allSizes.push(...Array(categoryCount).fill(25));
-    }
-    
-    // Mezclar tamaños
-    const shuffled = [...allSizes];
-    for (let i = shuffled.length - 1; i > 0; i--) {
+    // Crear un array de índices y mezclarlo para obtener productos aleatorios sin repetir
+    const indices = Array.from({ length: products.length }, (_, i) => i);
+    for (let i = indices.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
-      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      [indices[i], indices[j]] = [indices[j], indices[i]];
     }
     
-    // Crear tarjetas
-    const cards = shuffled.map(size => {
+    // Crear una card para cada producto usando el índice aleatorio
+    for (let i = 0; i < maxProducts; i++) {
+      const productIndex = indices[i % indices.length]; // Uso módulo para evitar salirse del rango
+      const product = products[productIndex];
+      
+      // Verificar que el producto tenga un ID válido
+      if (!product || !product.id) {
+        console.error("Producto sin ID válido:", product);
+        continue;
+      }
+      
+      // Generar un ID único para la card pero mantener asociación con el producto real
       const id = `card-${idCounter.current++}`;
-      const isCategory = size === 25;
       
-      const imageUrl = isCategory ? null : getRandomImageUrl(500, 500, id);
-      const lowResUrl = isCategory ? null : getLowResImageUrl(id);
+      // 70% grandes, 30% medianas
+      const isLarge = Math.random() < 0.7;
       
-      return {
+      newCards.push({
         id,
-        value: size,
-        isCategory,
-        categoryName: isCategory ? getNextCategory() : null,
-        imageUrl,
-        lowResUrl,
-        targetColumn: isCategory ? nextCategoryColumnRef.current++ % columnCount : null
-      };
-    });
+        value: isLarge ? 100 : 75,
+        isCategory: false,
+        productId: product.id.toString(), // Asegurar que sea string
+        title: product.title || "",
+        description: product.description || "",
+        rating: product.rating || "",
+        reviewCount: product.reviewCount || "",
+        category: product.category || "",
+        // Generar URLs de imágenes basadas en el id de la card
+        imageUrl: getRandomImageUrl(500, 500, id),
+        lowResUrl: getLowResImageUrl(id)
+      });
+    }
     
-    return cards;
+    console.log("Nuevas tarjetas generadas:", newCards.length);
+    return newCards;
   };
   
   // Distribuir tarjetas en columnas
@@ -389,76 +443,61 @@ const Grid = () => {
     }
   };
   
-  // Cargar más tarjetas
-  const loadMoreCards = () => {
-    if (isLoading) return;
+  // Inicializar y configurar carga
+  useEffect(() => {
+    // Generar 70 productos iniciales
+    const initialCards = generateCards();
+    setCards(initialCards);
     
-    setIsLoading(true);
-    scrollCounter.current += 1;
-    
-    captureScrollPosition();
-    
-    // Generar más tarjetas
-    const newCards = generateCards(columnCount * 6, 1);
-    
-    // Distribuir nuevas tarjetas
-    setColumnData(prevColumns => {
-      if (prevColumns.length === 0) {
-        return distributeCards(newCards);
-      }
-
-      const updatedColumns = [...prevColumns.map(col => [...col])]; // Copia profunda
-
-      // Primero distribuir categorías
-      const categories = newCards.filter(card => card.isCategory);
-      const nonCategories = newCards.filter(card => !card.isCategory);
-      
-      categories.forEach(card => {
-        const colIndex = card.targetColumn !== null ? card.targetColumn % columnCount : Math.floor(Math.random() * columnCount);
-        updatedColumns[colIndex].push(card);
-      });
-      
-      // Distribuir resto de tarjetas uniformemente
-      nonCategories.forEach((card) => {
-        let minColumn = 0;
-        let minCount = updatedColumns[0].length;
-        
-        for (let i = 1; i < columnCount; i++) {
-          if (updatedColumns[i].length < minCount) {
-            minCount = updatedColumns[i].length;
-            minColumn = i;
-          }
-        }
-        
-        updatedColumns[minColumn].push(card);
-      });
-      
-      return updatedColumns;
-    });
-    
+    // Una vez que las cards iniciales están listas, comenzar a precargar el siguiente lote
     setTimeout(() => {
-      setIsLoading(false);
-    }, 10);
-  };
+      preloadNextBatch(initialCards);
+    }, 1000);
+    
+    // Configurar el scroll infinito
+    const handleScroll = () => {
+      if (window.innerHeight + document.documentElement.scrollTop >= document.documentElement.scrollHeight - 100) {
+        // Si tenemos cards precargadas, usarlas
+        if (nextBatchRef.current && nextBatchRef.current.length > 0) {
+          console.log("Usando lote precargado de cards");
+          const precachedCards = nextBatchRef.current;
+          nextBatchRef.current = []; // Limpiar para la próxima precarga
+          
+          setCards(prevCards => [...prevCards, ...precachedCards]);
+          
+          // Comenzar a precargar el siguiente lote
+          setTimeout(() => {
+            preloadNextBatch([...cards, ...precachedCards]);
+          }, 500);
+        } else {
+          // Fallback: generar nuevas cards si no hay precargadas
+          console.log("No hay cards precargadas, generando nuevas");
+          const newCards = generateCards();
+          setCards(prevCards => [...prevCards, ...newCards]);
+          
+          // Comenzar a precargar el siguiente lote
+          setTimeout(() => {
+            preloadNextBatch([...cards, ...newCards]);
+          }, 500);
+        }
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+  
+  // Actualizar columnData cuando cambian las cards
+  useEffect(() => {
+    if (cards.length > 0) {
+      setColumnData(distributeCards(cards));
+    }
+  }, [cards, columnCount]);
   
   // Mantener scroll después de renderizado
   useLayoutEffect(() => {
     restoreScrollPosition();
   }, [columnData]);
-  
-  // Verificar si se necesita cargar más contenido
-  const checkContentHeight = () => {
-    if (isLoading) return;
-    
-    const windowHeight = window.innerHeight;
-    const documentHeight = document.documentElement.scrollHeight;
-    const scrollTop = window.scrollY || document.documentElement.scrollTop;
-    
-    // Cargar más cuando esté a varias pantallas de distancia del final
-    if (documentHeight - (scrollTop + windowHeight) < windowHeight * PRELOAD_AHEAD) {
-      loadMoreCards();
-    }
-  };
   
   // Obtener elemento de anclaje
   const getScrollAnchorItem = (columnIndex) => {
@@ -466,62 +505,6 @@ const Grid = () => {
     const visibleItems = Math.min(5, columnData[columnIndex].length);
     return Math.floor(visibleItems / 2);
   };
-  
-  // Inicializar y configurar carga infinita
-  useEffect(() => {
-    // Redistribuir tarjetas existentes cuando cambia el columnCount
-    if (columnData.length > 0 && columnData.length !== columnCount) {
-      captureScrollPosition();
-      
-      // Aplanar todas las tarjetas existentes
-      const allCards = columnData.flatMap(column => column);
-      // Redistribuir en el nuevo número de columnas
-      setColumnData(distributeCards(allCards));
-    } else if (columnData.length === 0) {
-      // Cargar más tarjetas por columna inicialmente
-      const initialCards = generateCards(15 * columnCount, 1);
-      setColumnData(distributeCards(initialCards));
-    }
-    
-    // Configurar observer para carga infinita
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && !isLoading) {
-          loadMoreCards();
-        }
-      },
-      { rootMargin: "1500px", threshold: 0.1 }
-    );
-    
-    if (observerRef.current) {
-      observer.observe(observerRef.current);
-    }
-    
-    // También usar scroll handler como respaldo
-    let scrollTimer;
-    const handleScrollCheck = () => {
-      clearTimeout(scrollTimer);
-      scrollTimer = setTimeout(checkContentHeight, 100);
-    };
-    
-    window.addEventListener('scroll', handleScrollCheck, { passive: true });
-    
-    // Verificar si se necesita más contenido después de carga inicial
-    setTimeout(checkContentHeight, 100);
-    setTimeout(checkContentHeight, 1000);
-    
-    return () => {
-      if (observerRef.current) {
-        observer.unobserve(observerRef.current);
-      }
-      window.removeEventListener('scroll', handleScrollCheck);
-      clearTimeout(scrollTimer);
-      
-      if (visibleRowsObserver.current) {
-        visibleRowsObserver.current.disconnect();
-      }
-    };
-  }, [columnCount, loadedImages]);
   
   // Calcular ancho de columna
   const getColumnWidth = () => {
@@ -568,25 +551,63 @@ const Grid = () => {
   const handleCardClick = (card) => {
     if (card.isCategory) return;
     
-    // Precargar la imagen inmediatamente antes de navegar
-    const detailUrl = getDetailImageUrl(card.id);
-    const lowResUrl = `https://picsum.photos/seed/${parseInt(card.id.split('-')[1]) % 1000}/100/178?blur=1`;
+    // Usar directamente el ID del producto para la navegación
+    const productId = card.productId;
     
-    // Guardar en sessionStorage para recuperarla en ProductDetail
-    savePreloadedImage(card.id, detailUrl);
+    console.log("Navegando al producto:", productId, card.title);
     
-    // Precargar la imagen antes de navegar
-    const img = new Image();
-    img.src = detailUrl;
+    // Navegar directamente a la URL del ID del producto sin el prefijo "/product/"
+    // Usar window.location.href para asegurar una recarga completa
+    window.location.href = `/${productId}`;
+  };
+  
+  // Precargar imágenes de las próximas cards
+  const preloadNextBatch = (currentCards) => {
+    if (!currentCards || currentCards.length === 0) return;
     
-    // Precargar la versión de baja resolución
-    const lowResImg = new Image();
-    lowResImg.src = lowResUrl;
+    console.log("Precargando próximo lote de imágenes...");
     
-    // Navegar a la página de detalle
-    requestAnimationFrame(() => {
-      window.location.href = `/product/${card.id}`;
+    // Generar el próximo lote de cards pero no añadirlo al estado todavía
+    const nextCards = generateCards();
+    
+    // Precargar sus imágenes en segundo plano
+    nextCards.forEach(card => {
+      if (!card.isCategory && card.imageUrl) {
+        preloadImage(card.imageUrl, card.id, false);
+      }
     });
+    
+    // Almacenar las próximas cards precargadas para usarlas después
+    nextBatchRef.current = nextCards;
+    console.log(`${nextCards.length} imágenes puestas en cola para precarga`);
+  };
+  
+  // Configurar observador para iniciar precarga antes de llegar al final
+  const setupPreloadObserver = () => {
+    if (preloadObserverRef.current) {
+      preloadObserverRef.current.disconnect();
+    }
+    
+    preloadObserverRef.current = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          console.log("Zona de precarga alcanzada");
+          
+          // Si no hay un lote precargado, generar uno nuevo
+          if (!nextBatchRef.current || nextBatchRef.current.length === 0) {
+            preloadNextBatch(cards);
+          }
+        }
+      },
+      { 
+        rootMargin: "300px", // Comenzar precarga cuando estamos a 300px del final
+        threshold: 0.1 
+      }
+    );
+    
+    if (preloadTriggerRef.current) {
+      preloadObserverRef.current.observe(preloadTriggerRef.current);
+    }
   };
   
   // Estilos CSS en línea
@@ -725,6 +746,24 @@ const Grid = () => {
     };
   }, []);
   
+  // Configurar observadores para visibilidad y precarga
+  useEffect(() => {
+    // Configurar observadores después de que el DOM se actualice
+    setTimeout(() => {
+      setupVisibleRowsObserver();
+      setupPreloadObserver();
+    }, 100);
+    
+    return () => {
+      if (visibleRowsObserver.current) {
+        visibleRowsObserver.current.disconnect();
+      }
+      if (preloadObserverRef.current) {
+        preloadObserverRef.current.disconnect();
+      }
+    };
+  }, [columnData]);
+  
   return (
     <div style={styles.container} ref={containerRef}>
       <div 
@@ -776,6 +815,7 @@ const Grid = () => {
                   key={card.id}
                   className="grid-card"
                   data-card-id={card.id}
+                  data-product-id={card.productId}
                   ref={colIndex === 1 && itemIndex === getScrollAnchorItem(colIndex) ? scrollAnchorRef : null}
                   style={{
                     ...styles.card,
@@ -843,7 +883,19 @@ const Grid = () => {
         ))}
       </div>
       
+      {/* Elemento observador para iniciar scroll infinito */}
       <div ref={observerRef} style={styles.observer}></div>
+      
+      {/* Elemento para detectar cuándo precargar el siguiente lote */}
+      <div 
+        ref={preloadTriggerRef} 
+        style={{
+          ...styles.observer,
+          marginTop: '0',
+          position: 'relative',
+          bottom: '400px' // Se detecta antes de llegar al final
+        }}
+      ></div>
       
       {isLoading && (
         <div style={styles.loadingIndicator}>

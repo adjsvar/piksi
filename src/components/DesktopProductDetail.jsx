@@ -1,13 +1,9 @@
 import React, { useEffect, useState, useRef, useMemo } from 'react';
 import Grid from './Grid';
 
-const DesktopProductDetail = () => {
-  // Extraer ID del producto desde la URL
-  const urlParts = window.location.pathname.split('/');
-  const productId = urlParts[urlParts.length - 1];
-  
-  const [product, setProduct] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
+const DesktopProductDetail = ({ product: propProduct }) => {
+  const [product, setProduct] = useState(propProduct || null);
+  const [isLoading, setIsLoading] = useState(!propProduct);
   const [screenSize, setScreenSize] = useState('desktop');
   const [gap, setGap] = useState(1.0);
   const [imageLoaded, setImageLoaded] = useState(false);
@@ -17,6 +13,57 @@ const DesktopProductDetail = () => {
   const containerRef = useRef(null);
   const imageRef = useRef(null);
   const gridRef = useRef(null);
+  
+  // Si no recibimos el producto como prop, extraerlo de la URL
+  useEffect(() => {
+    // Si ya tenemos el producto como prop, no necesitamos generarlo
+    if (propProduct) {
+      setProduct(propProduct);
+      setIsLoading(false);
+      return;
+    }
+    
+    // Extraer ID del producto desde la URL (fallback para compatibilidad)
+    const urlParts = window.location.pathname.split('/');
+    const productId = urlParts[urlParts.length - 1];
+    
+    // Si no tenemos ID, no podemos continuar
+    if (!productId) return;
+    
+    // Generar el producto mediante las funciones existentes
+    const idNumber = parseInt(productId.split('-')[1]) || 1;
+    
+    // Ver si hay una imagen precargada en sessionStorage
+    const precachedImageUrl = getPrecachedImage(productId);
+    
+    // URL para la imagen principal
+    const mainImageUrl = precachedImageUrl || 
+      `https://picsum.photos/seed/${idNumber % 1000}/800/1422`;
+    
+    // URL para la imagen de baja resolución (placeholder)
+    const lowResUrl = getLowResUrl(idNumber);
+    
+    // Precargar la imagen principal
+    const img = new Image();
+    img.src = mainImageUrl;
+    
+    const generatedProduct = {
+      id: productId,
+      imageUrl: mainImageUrl,
+      lowResUrl: lowResUrl,
+      title: generateProductTitle(idNumber),
+      price: generateProductPrice(idNumber),
+      description: generateProductDescription(idNumber),
+      rating: generateRating(idNumber),
+      reviewCount: generateReviewCount(idNumber),
+      category: generateCategory(idNumber)
+    };
+    
+    // Mostrar el producto inmediatamente, la imagen se cargará en segundo plano
+    setProduct(generatedProduct);
+    setIsLoading(false);
+    
+  }, [propProduct]);
   
   // Asegurar que el scroll comience desde arriba
   useEffect(() => {
@@ -95,7 +142,7 @@ const DesktopProductDetail = () => {
   }, []);
   
   // Buscar imagen precargada en sessionStorage
-  const getPrecachedImage = () => {
+  const getPrecachedImage = (productId) => {
     try {
       return sessionStorage.getItem(`preload_${productId}`);
     } catch (e) {
@@ -111,9 +158,9 @@ const DesktopProductDetail = () => {
   
   // Pre-cargar imagen en el head del documento
   useEffect(() => {
-    if (!productId) return;
+    if (!product.id) return;
     
-    const idNumber = parseInt(productId.split('-')[1]) || 1;
+    const idNumber = parseInt(product.id.split('-')[1]) || 1;
     const imageUrl = `https://picsum.photos/seed/${idNumber % 1000}/800/1422`;
     
     // Agregar link de preload al head
@@ -128,46 +175,7 @@ const DesktopProductDetail = () => {
     return () => {
       document.head.removeChild(linkElement);
     };
-  }, [productId]);
-  
-  // Generar datos del producto con imagen precargada
-  useEffect(() => {
-    setIsLoading(true);
-    
-    // Tiempo mínimo para mostrar el spinner (para mejor experiencia de usuario)
-    const idNumber = parseInt(productId.split('-')[1]) || 1;
-    
-    // Ver si hay una imagen precargada en sessionStorage
-    const precachedImageUrl = getPrecachedImage();
-    
-    // URL para la imagen principal
-    const mainImageUrl = precachedImageUrl || 
-      `https://picsum.photos/seed/${idNumber % 1000}/800/1422`;
-    
-    // URL para la imagen de baja resolución (placeholder)
-    const lowResUrl = getLowResUrl(idNumber);
-    
-    // Precargar la imagen principal
-    const img = new Image();
-    img.src = mainImageUrl;
-    
-    const generatedProduct = {
-      id: productId,
-      imageUrl: mainImageUrl,
-      lowResUrl: lowResUrl,
-      title: generateProductTitle(idNumber),
-      price: generateProductPrice(idNumber),
-      description: generateProductDescription(idNumber),
-      rating: generateRating(idNumber),
-      reviewCount: generateReviewCount(idNumber),
-      category: generateCategory(idNumber)
-    };
-    
-    // Mostrar el producto inmediatamente, la imagen se cargará en segundo plano
-    setProduct(generatedProduct);
-    setIsLoading(false);
-    
-  }, [productId]);
+  }, [product.id]);
   
   // Funciones para generar datos de producto consistentes
   const generateProductTitle = (idNumber) => {
@@ -534,17 +542,19 @@ const DesktopProductDetail = () => {
       <div style={styles.productDetail}>
         <div style={styles.imageContainer}>
           {/* Imagen de baja resolución como placeholder */}
-          <img 
-            src={product.lowResUrl} 
-            alt="" 
-            style={styles.lowResImage} 
-          />
+          {!imageLoaded && (
+            <img
+              src={product.lowResUrl}
+              alt=""
+              style={styles.lowResImage}
+            />
+          )}
           
           {/* Imagen principal de alta resolución */}
-          <img 
+          <img
             ref={imageRef}
-            src={product.imageUrl} 
-            alt={product.title} 
+            src={product.imageUrl}
+            alt={product.title}
             style={styles.productImage}
             onLoad={handleImageLoad}
             fetchpriority="high"
@@ -558,8 +568,8 @@ const DesktopProductDetail = () => {
             onClick={handleLike}
             className={isLiked ? 'heart-animation' : ''}
           >
-            <svg 
-              xmlns="http://www.w3.org/2000/svg" 
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 24 24"
               style={styles.heartIcon}
               fill={isLiked ? "#ffffff" : "none"}
@@ -571,7 +581,7 @@ const DesktopProductDetail = () => {
               <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
             </svg>
           </div>
-          
+
           <div>
             <span style={styles.category}>{product.category}</span>
             <h1 style={styles.title}>{product.title}</h1>
