@@ -16,7 +16,8 @@ const Home = () => {
 
   const styles = {
     homeContainer: {
-      paddingTop: isMobile ? '60px' : '120px'
+      marginTop: isMobile ? '60px' : '120px',
+      minHeight: '100vh'
     }
   };
 

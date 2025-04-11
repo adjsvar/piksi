@@ -12,9 +12,47 @@ const DesktopProductDetail = () => {
   const [gap, setGap] = useState(1.0);
   const [imageLoaded, setImageLoaded] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
+  const [showSimilarButton, setShowSimilarButton] = useState(true);
   
   const containerRef = useRef(null);
   const imageRef = useRef(null);
+  const gridRef = useRef(null);
+  
+  // Asegurar que el scroll comience desde arriba
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+  
+  // Controlar visibilidad del botón basado en el scroll
+  useEffect(() => {
+    let lastScrollY = window.scrollY;
+    
+    const handleScroll = () => {
+      if (gridRef.current) {
+        const gridRect = gridRef.current.getBoundingClientRect();
+        const isGridVisible = gridRect.top <= window.innerHeight;
+        const isScrollingDown = window.scrollY > lastScrollY;
+        const isAtTop = window.scrollY === 0;
+        
+        // Ocultar el botón si:
+        // 1. Se está haciendo scroll hacia abajo
+        if (isScrollingDown) {
+          setShowSimilarButton(false);
+        }
+        // Mostrar el botón si:
+        // 1. Se está en la parte superior de la página O
+        // 2. Se está haciendo scroll hacia arriba y el grid no está visible
+        else if (isAtTop || !isGridVisible) {
+          setShowSimilarButton(true);
+        }
+      }
+      
+      lastScrollY = window.scrollY;
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
   
   // Determinar tamaño de pantalla y ajustar gap
   useEffect(() => {
@@ -308,8 +346,12 @@ const DesktopProductDetail = () => {
     },
     description: {
       color: '#334155',
-      lineHeight: 1.625,
-      marginBottom: '1.5rem'
+      lineHeight: 1.5,
+      marginBottom: '1.5rem',
+      fontSize: '0.9rem',
+      maxHeight: '180px',
+      overflowY: 'auto',
+      paddingRight: '0.5rem'
     },
     category: {
       display: 'inline-block',
@@ -345,6 +387,35 @@ const DesktopProductDetail = () => {
       padding: '0.5rem',
       borderRadius: '0.375rem',
       textAlign: 'center'
+    },
+    similarButton: {
+      position: 'fixed',
+      bottom: '2rem',
+      left: '50%',
+      transform: 'translateX(-50%)',
+      backgroundColor: '#3b82f6',
+      color: 'white',
+      border: 'none',
+      padding: '0.75rem 1.5rem',
+      borderRadius: '0.375rem',
+      fontSize: '1rem',
+      fontWeight: 500,
+      cursor: 'pointer',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '0.5rem',
+      boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+      transition: 'transform 0.2s, box-shadow 0.2s',
+      outline: 'none'
+    },
+    similarButtonHover: {
+      transform: 'translateX(-50%) translateY(-2px)',
+      boxShadow: '0 6px 8px rgba(0, 0, 0, 0.15)'
+    },
+    arrowIcon: {
+      width: '20px',
+      height: '20px',
+      transition: 'transform 0.2s'
     },
     similarTitle: {
       fontSize: '1.25rem',
@@ -533,13 +604,51 @@ const DesktopProductDetail = () => {
         </div>
       </div>
       
-      <h2 style={styles.similarTitle}>PRODUCTOS SIMILARES</h2>
-      
-      {/* Separación clara entre detalles del producto y productos similares */}
-      <div style={{height: '2rem', width: '100%'}}></div>
+      <button 
+        style={{
+          ...styles.similarButton,
+          display: showSimilarButton ? 'flex' : 'none'
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.transform = styles.similarButtonHover.transform;
+          e.currentTarget.style.boxShadow = styles.similarButtonHover.boxShadow;
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = 'translateX(-50%)';
+          e.currentTarget.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.1)';
+        }}
+        onClick={() => {
+          const navbarHeight = 64; // Altura del navbar
+          const gridPosition = gridRef.current?.getBoundingClientRect().top;
+          const scrollPosition = window.scrollY + gridPosition - navbarHeight;
+          
+          window.scrollTo({
+            top: scrollPosition,
+            behavior: 'smooth'
+          });
+          
+          setShowSimilarButton(false);
+        }}
+      >
+        Productos similares
+        <svg 
+          xmlns="http://www.w3.org/2000/svg" 
+          viewBox="0 0 24 24"
+          style={styles.arrowIcon}
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M6 9l6 6 6-6"/>
+        </svg>
+      </button>
       
       {/* Usando el componente Grid para mostrar productos similares, ocupa todo el ancho */}
-      <Grid />
+      <div ref={gridRef}>
+        <Grid />
+      </div>
     </div>
   );
 };
