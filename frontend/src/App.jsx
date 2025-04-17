@@ -9,13 +9,19 @@ const ScrollToTop = () => {
   const { pathname } = useLocation();
 
   useEffect(() => {
-    // Resetear scroll al cambiar de ruta
-    window.scrollTo(0, 0);
+    // Resetear scroll al cambiar de ruta de manera suave
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
 
     // Observar cambios en el DOM para mantener el scroll en la parte superior
     const observer = new MutationObserver(() => {
       if (window.scrollY !== 0) {
-        window.scrollTo(0, 0);
+        window.scrollTo({
+          top: 0,
+          behavior: 'smooth'
+        });
       }
     });
 
@@ -29,7 +35,7 @@ const ScrollToTop = () => {
     // Limpiar después de un tiempo para permitir scroll normal
     const timer = setTimeout(() => {
       observer.disconnect();
-    }, 1000);
+    }, 50); // Reducido de 500 a 50ms
 
     return () => {
       observer.disconnect();

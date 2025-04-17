@@ -120,7 +120,7 @@ const MobileProductDetail = ({ product: propProduct }) => {
   
   // Pre-cargar imagen en el head del documento
   useEffect(() => {
-    if (!product.id) return;
+    if (!product || !product.id) return;
     
     const idNumber = parseInt(product.id.split('-')[1]) || 1;
     const imageUrl = `https://picsum.photos/seed/${idNumber % 1000}/800/1422`;
@@ -137,7 +137,7 @@ const MobileProductDetail = ({ product: propProduct }) => {
     return () => {
       document.head.removeChild(linkElement);
     };
-  }, [product.id]);
+  }, [product]);
   
   // Funciones para generar datos de producto consistentes
   const generateProductTitle = (idNumber) => {
@@ -248,6 +248,16 @@ const MobileProductDetail = ({ product: propProduct }) => {
       width: 'calc(100% - 1rem)',
       minWidth: '250px',
       height: 'calc(100vh - 4rem - 1rem)',
+      backgroundColor: '#f3f4f6'
+    },
+    videoContainer: {
+      position: 'relative',
+      borderRadius: '16px',
+      overflow: 'hidden',
+      boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
+      width: 'calc(100% - 1rem)',
+      minWidth: '250px',
+      height: 'calc(100vh - 4rem - 1rem - 10px)', // 10px menos para eliminar bandas negras
       backgroundColor: '#f3f4f6'
     },
     productImage: {
@@ -474,47 +484,68 @@ const MobileProductDetail = ({ product: propProduct }) => {
     );
   }
   
+  // Verificar si debemos mostrar un video en lugar de una imagen
+  const showVideo = product.videoUrl || product.showVideo;
+  
   return (
     <div ref={containerRef} style={styles.container}>
       <div style={styles.productDetail}>
-        <div style={styles.imageContainer}>
-          {/* Imagen de baja resolución como placeholder */}
-          {!imageLoaded && (
-            <img
-              src={product.lowResUrl}
-              alt=""
-              style={styles.lowResImage}
-            />
-          )}
-          
-          {/* Imagen principal de alta resolución */}
-          <img
-            ref={imageRef}
-            src={product.imageUrl}
-            alt={product.title}
-            style={styles.productImage}
-            onLoad={handleImageLoad}
-            fetchpriority="high"
-          />
-
-          <div style={styles.buttonContainer}>
-            <button 
-              style={styles.button}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = styles.buttonHover.backgroundColor;
+        {showVideo ? (
+          <div style={styles.videoContainer}>
+            <iframe
+              src="https://www.youtube.com/embed/y7nL9yBHTS4?autoplay=1&mute=1&loop=1&playlist=y7nL9yBHTS4&controls=0"
+              title="YouTube video player"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              style={{ 
+                width: '100%', 
+                height: 'calc(100% + 10px)', // 10px más alto para eliminar bandas negras
+                border: 'none',
+                marginTop: '-5px', // Ajustar posición vertical
+                marginBottom: '-5px'
               }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = styles.button.backgroundColor;
-              }}
-            >
-              Ver en Amazon
-            </button>
+              allowFullScreen
+            ></iframe>
+          </div>
+        ) : (
+          <div style={styles.imageContainer}>
+            {/* Imagen de baja resolución como placeholder */}
+            {!imageLoaded && (
+              <img
+                src={product.lowResUrl}
+                alt=""
+                style={styles.lowResImage}
+              />
+            )}
             
-            <div style={styles.disclaimer}>
-              Como Asociados de Amazon, obtenemos ingresos por las compras realizadas mediante los enlaces de esta página.
+            {/* Imagen principal de alta resolución */}
+            <img
+              ref={imageRef}
+              src={product.imageUrl}
+              alt={product.title}
+              style={styles.productImage}
+              onLoad={handleImageLoad}
+              fetchpriority="high"
+            />
+
+            <div style={styles.buttonContainer}>
+              <button 
+                style={styles.button}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = styles.buttonHover.backgroundColor;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = styles.button.backgroundColor;
+                }}
+              >
+                Ver en Amazon
+              </button>
+              
+              <div style={styles.disclaimer}>
+                Como Asociados de Amazon, obtenemos ingresos por las compras realizadas mediante los enlaces de esta página.
+              </div>
             </div>
           </div>
-        </div>
+        )}
         
         <div style={styles.productInfo}>
           {/* Botón de like en la esquina superior derecha */}
@@ -554,12 +585,12 @@ const MobileProductDetail = ({ product: propProduct }) => {
       <h2 style={styles.similarTitle}>PRODUCTOS SIMILARES</h2>
       
       {/* Separación clara entre detalles del producto y productos similares */}
-      <div style={{height: '2rem', width: '100%'}}></div>
-      
-      {/* Usando el componente Grid para mostrar productos similares, ocupa todo el ancho */}
-      <Grid />
+      <div style={{ marginTop: '20px' }}>
+        {/* Usando el componente Grid para mostrar productos similares, ocupa todo el ancho */}
+        <Grid />
+      </div>
     </div>
   );
 };
 
-export default MobileProductDetail; 
+export default MobileProductDetail;

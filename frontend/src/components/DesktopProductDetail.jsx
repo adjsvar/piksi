@@ -285,6 +285,17 @@ const DesktopProductDetail = ({ product: propProduct }) => {
       aspectRatio: '9/16',
       backgroundColor: '#f3f4f6'
     },
+    videoContainer: {
+      position: 'relative',
+      borderRadius: '16px',
+      overflow: 'hidden',
+      boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
+      width: getCardWidth(),
+      minWidth: '250px',
+      aspectRatio: '9/16',
+      height: 'calc((9/16) * ' + getCardWidth() + ' - 10px)', // 10px menos alto
+      backgroundColor: '#f3f4f6'
+    },
     productImage: {
       width: '100%',
       height: '100%',
@@ -537,29 +548,50 @@ const DesktopProductDetail = ({ product: propProduct }) => {
     );
   }
   
+  // Verificar si debemos mostrar un video en lugar de una imagen
+  const showVideo = product.videoUrl || product.showVideo;
+  
   return (
     <div ref={containerRef} style={styles.container}>
       <div style={styles.productDetail}>
-        <div style={styles.imageContainer}>
-          {/* Imagen de baja resolución como placeholder */}
-          {!imageLoaded && (
+        {showVideo ? (
+          <div style={styles.videoContainer}>
+            <iframe
+              src="https://www.youtube.com/embed/y7nL9yBHTS4?autoplay=1&mute=1&loop=1&playlist=y7nL9yBHTS4&controls=0"
+              title="YouTube video player"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              style={{ 
+                width: '100%', 
+                height: 'calc(100% + 10px)', // 10px más alto para eliminar bandas negras
+                border: 'none',
+                marginTop: '-5px', // Ajustar posición vertical
+                marginBottom: '-5px'
+              }}
+              allowFullScreen
+            ></iframe>
+          </div>
+        ) : (
+          <div style={styles.imageContainer}>
+            {/* Imagen de baja resolución como placeholder */}
+            {!imageLoaded && (
+              <img
+                src={product.lowResUrl}
+                alt=""
+                style={styles.lowResImage}
+              />
+            )}
+            
+            {/* Imagen principal de alta resolución */}
             <img
-              src={product.lowResUrl}
-              alt=""
-              style={styles.lowResImage}
+              ref={imageRef}
+              src={product.imageUrl}
+              alt={product.title}
+              style={styles.productImage}
+              onLoad={handleImageLoad}
+              fetchpriority="high"
             />
-          )}
-          
-          {/* Imagen principal de alta resolución */}
-          <img
-            ref={imageRef}
-            src={product.imageUrl}
-            alt={product.title}
-            style={styles.productImage}
-            onLoad={handleImageLoad}
-            fetchpriority="high"
-          />
-        </div>
+          </div>
+        )}
         
         <div style={styles.productInfo}>
           {/* Botón de like en la esquina superior derecha */}
@@ -655,12 +687,13 @@ const DesktopProductDetail = ({ product: propProduct }) => {
         </svg>
       </button>
       
-      {/* Usando el componente Grid para mostrar productos similares, ocupa todo el ancho */}
-      <div ref={gridRef}>
+      {/* Separación clara entre detalles del producto y productos similares */}
+      <div style={{ marginTop: '20px' }}>
+        {/* Usando el componente Grid para mostrar productos similares, ocupa todo el ancho */}
         <Grid />
       </div>
     </div>
   );
 };
 
-export default DesktopProductDetail; 
+export default DesktopProductDetail;

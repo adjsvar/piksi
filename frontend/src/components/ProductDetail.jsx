@@ -8,14 +8,14 @@ const ProductDetail = () => {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const { id } = useParams(); // Extraer el ID de la URL
   const [productData, setProductData] = useState(null);
-  const [videoUrl, setVideoUrl] = useState("https://www.youtube.com/shorts/cRs0seqHxA0?feature=share");
+  const [videoUrl, setVideoUrl] = useState("https://www.youtube.com/shorts/y7nL9yBHTS4?feature=share");
 
   useEffect(() => {
     // Scroll to top when component mounts
     window.scrollTo(0, 0);
 
     // Si estamos en la ruta que parece un video de YouTube, mostrar video
-    if (id && (id.includes('youtube') || id === 'cRs0seqHxA0')) {
+    if (id && (id.includes('youtube') || id === 'y7nL9yBHTS4')) {
       console.log("Mostrando video de YouTube para ID:", id);
       setProductData({
         id: "youtube-video",
@@ -24,7 +24,8 @@ const ProductDetail = () => {
         category: "Videos",
         rating: "5.0",
         reviewCount: "999",
-        videoUrl: videoUrl
+        videoUrl: videoUrl,
+        showVideo: true
       });
       return;
     }
@@ -46,14 +47,14 @@ const ProductDetail = () => {
       console.log("Producto encontrado:", foundProduct);
       setProductData({
         ...foundProduct,
-        // No agregamos videoUrl aquí para productos normales
+        showVideo: true // Siempre mostrar video en lugar de imagen
       });
     } else {
       console.log("Producto no encontrado, generando datos para ID:", id);
       setProductData({
         id: id, // Incluir el ID original
         ...generateProductData(id),
-        // No agregamos videoUrl aquí para productos generados
+        showVideo: true // Siempre mostrar video en lugar de imagen
       });
     }
 
@@ -154,7 +155,8 @@ const ProductDetail = () => {
       category,
       rating,
       reviewCount,
-      price
+      price,
+      videoUrl: videoUrl // Agregar URL del video para todos los productos
     };
   };
 

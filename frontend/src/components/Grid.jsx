@@ -826,8 +826,9 @@ const Grid = () => {
       backgroundColor: '#f3f4f6',
       borderRadius: '16px',
       overflow: 'hidden',
-      boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
-      cursor: 'pointer'
+      boxShadow: '0 2px 3px 0 rgba(0, 0, 0, 0.08)',
+      cursor: 'pointer',
+      transition: 'transform 0.2s ease, box-shadow 0.2s ease'
     },
     cardOverlay: {
       position: 'absolute',
