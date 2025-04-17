@@ -16,7 +16,7 @@ const Grid = () => {
   // Constantes
   const [gap, setGap] = useState(0.5);
   const ASPECT_RATIO = 16/9;
-  const PRELOAD_AHEAD = 5;
+  const PRELOAD_AHEAD = 10; // Aumentado de 5 a 10 para precargar más elementos
   
   // Referencias
   const idCounter = useRef(0);
@@ -34,6 +34,7 @@ const Grid = () => {
   const nextBatchRef = useRef([]);
   const preloadObserverRef = useRef(null);
   const preloadTriggerRef = useRef(null);
+  const isPreloadingRef = useRef(false);
   
   // Lista de categorías únicas de los productos
   const allCategories = [...new Set(products.map(product => product.category))];
@@ -214,12 +215,50 @@ const Grid = () => {
     }
   };
   
-  // Precargar solo las imágenes visibles
+  // Precargar proactivamente todas las imágenes al llegar al 65% del scroll
   const setupVisibleRowsObserver = () => {
     if (visibleRowsObserver.current) {
       visibleRowsObserver.current.disconnect();
     }
+
+    // Precargar todas las imágenes actuales sin esperar a que sean visibles
+    const preloadAllCurrentImages = () => {
+      // Obtener todos los IDs de tarjetas actualmente renderizadas
+      const allCards = [];
+      columnData.forEach(column => {
+        column.forEach(card => {
+          if (!card.isCategory && card.imageUrl && !loadedImages[card.id]) {
+            allCards.push(card);
+          }
+        });
+      });
+      
+      // Precargar todas las imágenes de una vez
+      allCards.forEach(card => {
+        preloadImage(card.imageUrl, card.id, true);
+      });
+      
+      console.log(`Precargando proactivamente ${allCards.length} imágenes`);
+    };
     
+    // Configurar listener para detectar el 65% del scroll
+    const handleScroll = () => {
+      const scrollHeight = document.documentElement.scrollHeight;
+      const scrollTop = window.scrollY;
+      const clientHeight = window.innerHeight;
+      
+      // Calcular porcentaje de scroll (0-100)
+      const scrollPercentage = (scrollTop / (scrollHeight - clientHeight)) * 100;
+      
+      // Si estamos más allá del 65% del scroll, precargar todas las imágenes
+      if (scrollPercentage > 65) {
+        preloadAllCurrentImages();
+      }
+    };
+    
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    
+    // También mantenemos el observador como respaldo, pero con margen mucho mayor
     const cards = document.querySelectorAll('.grid-card');
     if (!cards.length) return;
     
@@ -231,22 +270,26 @@ const Grid = () => {
             const card = findCardById(cardId);
             
             if (card && !card.isCategory && card.imageUrl && !loadedImages[cardId]) {
-              // Cargar la imagen cuando está visible
+              // Cargar la imagen cuando está visible (como respaldo)
               preloadImage(card.imageUrl, cardId, true);
             }
           }
         });
       },
       {
-        rootMargin: '200px', // Precarga cuando está a 200px de distancia
+        rootMargin: '500px', // Margen mucho mayor para precarga muy anticipada
         threshold: 0.01
       }
     );
     
-    // Observar cada tarjeta
+    // Observar cada tarjeta como respaldo
     cards.forEach(card => {
       visibleRowsObserver.current.observe(card);
     });
+    
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
   };
   
   // Precargar una imagen
@@ -442,6 +485,39 @@ const Grid = () => {
       };
     }
   };
+
+  // Calcular posición para el trigger de precarga (65% del scroll)
+  const calculatePreloadTriggerPosition = () => {
+    // Crear elemento para detectar precarga al 65% de la página
+    const preloadTrigger = document.createElement('div');
+    preloadTrigger.id = 'preload-trigger';
+    preloadTrigger.style.position = 'absolute';
+    preloadTrigger.style.width = '100%';
+    preloadTrigger.style.height = '10px';
+    preloadTrigger.style.background = 'transparent';
+    preloadTrigger.style.pointerEvents = 'none';
+    
+    // Insertar en el DOM y posicionar
+    document.body.appendChild(preloadTrigger);
+    
+    // Posicionar al 65% del scroll
+    const updatePosition = () => {
+      const scrollHeight = document.documentElement.scrollHeight;
+      const viewportHeight = window.innerHeight;
+      // Calcular posición al 65% entre la posición actual y el final del documento
+      const scrollBottom = window.scrollY + viewportHeight;
+      const remainingScroll = scrollHeight - scrollBottom;
+      const triggerPosition = scrollBottom + (remainingScroll * 0.65);
+      
+      preloadTrigger.style.top = `${triggerPosition}px`;
+    };
+    
+    updatePosition();
+    window.addEventListener('scroll', updatePosition);
+    window.addEventListener('resize', updatePosition);
+    
+    return preloadTrigger;
+  };
   
   // Inicializar y configurar carga
   useEffect(() => {
@@ -454,12 +530,44 @@ const Grid = () => {
       preloadNextBatch(initialCards);
     }, 1000);
     
-    // Configurar el scroll infinito
+    // Elemento para detectar el 65% del scroll
+    const preloadTrigger = calculatePreloadTriggerPosition();
+    preloadTriggerRef.current = preloadTrigger;
+    
+    // Configurar observador para el trigger de precarga al 65%
+    setupPreloadObserver();
+    
+    // Manejar scroll para cargar nuevas cards al 65% y también al final como respaldo
     const handleScroll = () => {
-      if (window.innerHeight + document.documentElement.scrollTop >= document.documentElement.scrollHeight - 100) {
+      const scrollHeight = document.documentElement.scrollHeight;
+      const scrollTop = window.scrollY;
+      const clientHeight = window.innerHeight;
+      
+      // Calcular porcentaje de scroll (0-100)
+      const scrollPercentage = (scrollTop / (scrollHeight - clientHeight)) * 100;
+      
+      // Si alcanzamos el 65% del scroll y tenemos cards precargadas, cargarlas
+      if (scrollPercentage > 65 && nextBatchRef.current && nextBatchRef.current.length > 0) {
+        console.log("Alcanzado 65% del scroll, añadiendo nuevas cards proactivamente");
+        const precachedCards = nextBatchRef.current;
+        nextBatchRef.current = []; // Limpiar para la próxima precarga
+        
+        setCards(prevCards => [...prevCards, ...precachedCards]);
+        
+        // Comenzar a precargar el siguiente lote inmediatamente
+        setTimeout(() => {
+          preloadNextBatch([...cards, ...precachedCards]);
+        }, 500);
+        
+        // No ejecutar el código siguiente para evitar doble carga
+        return;
+      }
+      
+      // Como respaldo, también cargar al llegar casi al final
+      if (window.innerHeight + document.documentElement.scrollTop >= document.documentElement.scrollHeight - 250) {
         // Si tenemos cards precargadas, usarlas
         if (nextBatchRef.current && nextBatchRef.current.length > 0) {
-          console.log("Usando lote precargado de cards");
+          console.log("Usando lote precargado de cards (respaldo final de scroll)");
           const precachedCards = nextBatchRef.current;
           nextBatchRef.current = []; // Limpiar para la próxima precarga
           
@@ -471,7 +579,7 @@ const Grid = () => {
           }, 500);
         } else {
           // Fallback: generar nuevas cards si no hay precargadas
-          console.log("No hay cards precargadas, generando nuevas");
+          console.log("No hay cards precargadas, generando nuevas (respaldo)");
           const newCards = generateCards();
           setCards(prevCards => [...prevCards, ...newCards]);
           
@@ -483,8 +591,16 @@ const Grid = () => {
       }
     };
 
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      if (preloadTrigger && preloadTrigger.parentNode) {
+        preloadTrigger.parentNode.removeChild(preloadTrigger);
+      }
+      if (preloadObserverRef.current) {
+        preloadObserverRef.current.disconnect();
+      }
+    };
   }, []);
   
   // Actualizar columnData cuando cambian las cards
@@ -563,35 +679,91 @@ const Grid = () => {
   
   // Precargar imágenes de las próximas cards
   const preloadNextBatch = (currentCards) => {
-    if (!currentCards || currentCards.length === 0) return;
+    if (!currentCards || currentCards.length === 0 || isPreloadingRef.current) return;
     
-    console.log("Precargando próximo lote de imágenes...");
+    isPreloadingRef.current = true;
+    console.log("Precargando próximo lote de imágenes proactivamente...");
     
     // Generar el próximo lote de cards pero no añadirlo al estado todavía
     const nextCards = generateCards();
     
-    // Precargar sus imágenes en segundo plano
+    // Precargar sus imágenes en segundo plano con alta prioridad
+    // Usamos Promise.all para hacer un seguimiento de cuándo se han cargado
+    const preloadPromises = [];
+    
     nextCards.forEach(card => {
       if (!card.isCategory && card.imageUrl) {
-        preloadImage(card.imageUrl, card.id, false);
+        // Crear una promesa para cada imagen
+        const promise = new Promise((resolve) => {
+          const img = new Image();
+          img.onload = () => {
+            imageCache.current[card.imageUrl] = true;
+            setLoadedImages(prev => ({ ...prev, [card.id]: true }));
+            resolve();
+          };
+          img.onerror = () => {
+            delete imageCache.current[card.imageUrl];
+            resolve();
+          };
+          img.src = card.imageUrl;
+          img.fetchPriority = "high"; // Dar alta prioridad
+        });
+        
+        preloadPromises.push(promise);
       }
     });
     
     // Almacenar las próximas cards precargadas para usarlas después
     nextBatchRef.current = nextCards;
-    console.log(`${nextCards.length} imágenes puestas en cola para precarga`);
+    console.log(`${nextCards.length} imágenes puestas en cola para precarga proactiva`);
+    
+    // Resolver la bandera de precarga cuando la mayoría de las imágenes se hayan cargado
+    // o después de un tiempo máximo, lo que ocurra primero
+    Promise.race([
+      // Cuando al menos el 70% de las imágenes se hayan cargado
+      Promise.all(preloadPromises.slice(0, Math.floor(preloadPromises.length * 0.7))),
+      // O después de 3 segundos como máximo
+      new Promise(resolve => setTimeout(resolve, 3000))
+    ]).then(() => {
+      isPreloadingRef.current = false;
+      console.log("Precarga proactiva completada");
+    });
   };
   
-  // Configurar observador para iniciar precarga antes de llegar al final
+  // Configurar precarga basada en scroll al 65%
   const setupPreloadObserver = () => {
     if (preloadObserverRef.current) {
       preloadObserverRef.current.disconnect();
     }
     
+    // Función de manejo de scroll para iniciar precarga al 65%
+    const handleScrollForPreload = () => {
+      const scrollHeight = document.documentElement.scrollHeight;
+      const scrollTop = window.scrollY;
+      const clientHeight = window.innerHeight;
+      
+      // Calcular porcentaje de scroll (0-100)
+      const scrollPercentage = (scrollTop / (scrollHeight - clientHeight)) * 100;
+      
+      // Si estamos más allá del 65% del scroll, iniciar precarga del próximo lote
+      if (scrollPercentage > 65 && !isPreloadingRef.current) {
+        console.log("Punto de precarga al 65% alcanzado, iniciando precarga proactiva");
+        
+        // Si no hay un lote precargado, generar uno nuevo
+        if (!nextBatchRef.current || nextBatchRef.current.length === 0) {
+          preloadNextBatch(cards);
+        }
+      }
+    };
+    
+    // Agregamos el listener de scroll
+    window.addEventListener('scroll', handleScrollForPreload, { passive: true });
+    
+    // Mantenemos el observer como respaldo por si el listener falla
     preloadObserverRef.current = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting) {
-          console.log("Zona de precarga alcanzada");
+        if (entries[0].isIntersecting && !isPreloadingRef.current) {
+          console.log("Zona de precarga alcanzada a través del observer (respaldo)");
           
           // Si no hay un lote precargado, generar uno nuevo
           if (!nextBatchRef.current || nextBatchRef.current.length === 0) {
@@ -600,7 +772,6 @@ const Grid = () => {
         }
       },
       { 
-        rootMargin: "300px", // Comenzar precarga cuando estamos a 300px del final
         threshold: 0.1 
       }
     );
@@ -608,6 +779,10 @@ const Grid = () => {
     if (preloadTriggerRef.current) {
       preloadObserverRef.current.observe(preloadTriggerRef.current);
     }
+    
+    return () => {
+      window.removeEventListener('scroll', handleScrollForPreload);
+    };
   };
   
   // Estilos CSS en línea
@@ -681,6 +856,7 @@ const Grid = () => {
       width: '100%',
       height: '100%',
       objectFit: 'cover',
+      objectPosition: 'center',
       filter: 'blur(5px)',
       opacity: 0.7,
       transition: 'opacity 0.3s ease'
@@ -885,17 +1061,6 @@ const Grid = () => {
       
       {/* Elemento observador para iniciar scroll infinito */}
       <div ref={observerRef} style={styles.observer}></div>
-      
-      {/* Elemento para detectar cuándo precargar el siguiente lote */}
-      <div 
-        ref={preloadTriggerRef} 
-        style={{
-          ...styles.observer,
-          marginTop: '0',
-          position: 'relative',
-          bottom: '400px' // Se detecta antes de llegar al final
-        }}
-      ></div>
       
       {isLoading && (
         <div style={styles.loadingIndicator}>
